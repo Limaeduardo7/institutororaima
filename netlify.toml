@@ -1,0 +1,27 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Desabilitar plugins/extensões que estão causando problemas
+[build.processing]
+  skip_processing = true
+
+# Disable all extensions to avoid network issues
+# No plugins configured to avoid network connectivity issues
+
+# Redirecionamento para SPA React
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers para melhor performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"

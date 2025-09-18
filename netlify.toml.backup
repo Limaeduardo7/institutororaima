@@ -1,0 +1,16 @@
+[build]
+  # Comando de build que funciona
+  command = "npx vite build"
+  
+  # Pasta de publicação
+  publish = "dist"
+
+[build.environment]
+  # Versão do Node.js
+  NODE_VERSION = "20"
+
+# Configurações para Single Page Application (SPA)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
