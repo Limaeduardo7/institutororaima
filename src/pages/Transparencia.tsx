@@ -46,53 +46,8 @@ const Transparencia: React.FC = () => {
         setDocuments(docs)
       } catch (error) {
         console.error('Failed to load documents:', error)
-        // Fallback data for demonstration
-        setDocuments([
-          {
-            id: '1',
-            title: 'Relatório Financeiro Anual 2023',
-            description: 'Demonstrativo completo das receitas e despesas do Instituto durante o ano de 2023',
-            document_type: 'report',
-            file_url: '/documents/relatorio-2023.pdf',
-            file_name: 'relatorio-financeiro-2023.pdf',
-            upload_date: '2024-01-15',
-            year: 2023,
-            month: 12
-          },
-          {
-            id: '2',
-            title: 'Comprovante de Doações - Dezembro 2023',
-            description: 'Detalhamento de todas as doações recebidas no mês de dezembro',
-            document_type: 'receipt',
-            file_url: '/documents/doacoes-dez-2023.pdf',
-            file_name: 'comprovante-doacoes-dezembro-2023.pdf',
-            upload_date: '2024-01-05',
-            year: 2023,
-            month: 12
-          },
-          {
-            id: '3',
-            title: 'Demonstrativo de Projetos - 3º Trimestre 2023',
-            description: 'Relatório de execução e prestação de contas dos projetos sociais',
-            document_type: 'statement',
-            file_url: '/documents/projetos-3tri-2023.pdf',
-            file_name: 'demonstrativo-projetos-3tri-2023.pdf',
-            upload_date: '2023-10-30',
-            year: 2023,
-            month: 9
-          },
-          {
-            id: '4',
-            title: 'Auditoria Externa - 2023',
-            description: 'Relatório de auditoria independente das contas do Instituto',
-            document_type: 'report',
-            file_url: '/documents/auditoria-2023.pdf',
-            file_name: 'auditoria-externa-2023.pdf',
-            upload_date: '2024-02-20',
-            year: 2023,
-            month: 12
-          }
-        ])
+        // Em produção: deixar array vazio para mostrar mensagem apropriada
+        setDocuments([])
       } finally {
         setLoading(false)
       }

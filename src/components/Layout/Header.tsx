@@ -15,6 +15,7 @@ export default function Header() {
     { to: "/eventos", label: "Eventos" },
     { to: "/doacoes", label: "Doações" },
     { to: "/transparencia", label: "Transparência" },
+    { to: "/documentos", label: "Documentos" },
     { to: "/contato", label: "Contato" },
     { to: "/localizacao", label: "Localização" }
   ];

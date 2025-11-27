@@ -38,10 +38,12 @@ export interface Donation {
   id: string
   donor_name?: string
   donor_email?: string
+  donor_phone?: string
   amount: number
   payment_method: 'pix' | 'card' | 'boleto'
   status: 'pending' | 'completed' | 'failed'
   transaction_id?: string
+  message?: string
   created_at: string
 }
 
@@ -54,4 +56,20 @@ export interface ContactMessage {
   message: string
   status: 'new' | 'read' | 'replied'
   created_at: string
+}
+
+export interface Document {
+  id: string
+  title: string
+  description?: string
+  category: 'estatuto' | 'ata' | 'relatorio' | 'certidao' | 'outros'
+  file_url: string
+  file_name: string
+  file_size?: number
+  file_type?: string
+  upload_date: string
+  year?: number
+  is_public: boolean
+  created_at: string
+  updated_at: string
 }

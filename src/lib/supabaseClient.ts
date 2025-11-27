@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { SocialAction, Event, FinancialDocument, Donation, ContactMessage } from './types'
+import type { SocialAction, Event, FinancialDocument, Donation, ContactMessage, Document } from './types'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -392,6 +392,107 @@ export const contactService = {
       .delete()
       .eq('id', id);
     
+    if (error) throw error;
+  }
+}
+
+// Document Functions (General Administrative Documents)
+export const documentService = {
+  async getAll(): Promise<Document[]> {
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('is_public', true)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getByCategory(category: Document['category']): Promise<Document[]> {
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('category', category)
+      .eq('is_public', true)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getByYear(year: number): Promise<Document[]> {
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('year', year)
+      .eq('is_public', true)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async create(document: Omit<Document, 'id' | 'upload_date' | 'created_at' | 'updated_at'>): Promise<Document> {
+    const { data, error } = await supabase
+      .from('documents')
+      .insert([{ ...document, upload_date: new Date().toISOString() }])
+      .select();
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      throw new Error('Falha ao criar documento - nenhum dado retornado');
+    }
+    return data[0];
+  },
+
+  async uploadDocument(
+    file: File,
+    metadata: Omit<Document, 'id' | 'file_url' | 'file_name' | 'file_size' | 'file_type' | 'upload_date' | 'created_at' | 'updated_at'>
+  ): Promise<Document> {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `${metadata.category}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('documents')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = supabase.storage
+      .from('documents')
+      .getPublicUrl(filePath);
+
+    return await this.create({
+      ...metadata,
+      file_url: urlData.publicUrl,
+      file_name: file.name,
+      file_size: file.size,
+      file_type: file.type
+    });
+  },
+
+  async update(id: string, updates: Partial<Document>): Promise<Document> {
+    const { data, error } = await supabase
+      .from('documents')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select();
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      throw new Error('Falha ao atualizar documento - registro não encontrado');
+    }
+    return data[0];
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('documents')
+      .delete()
+      .eq('id', id);
+
     if (error) throw error;
   }
 }

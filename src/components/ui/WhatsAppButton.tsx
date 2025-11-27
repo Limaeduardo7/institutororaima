@@ -4,7 +4,7 @@ import { MessageSquare, X } from 'lucide-react'
 const WhatsAppButton: React.FC = () => {
   const [isVisible, setIsVisible] = useState(true)
   
-  const phoneNumber = "5595998765432" // Número do WhatsApp do Instituto
+  const phoneNumber = "554187479813" // Número do WhatsApp do Instituto
   const message = "Olá! Gostaria de saber mais sobre o trabalho do Instituto Estação."
   
   const handleWhatsAppClick = () => {

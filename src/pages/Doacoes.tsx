@@ -1,15 +1,15 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
-import { donationService } from '../lib/supabaseClient'
-import { 
-  Heart, 
-  CreditCard, 
-  Smartphone, 
-  FileText, 
-  Copy, 
+import { processDonation } from '../lib/mercadoPagoService'
+import {
+  Heart,
+  CreditCard,
+  Smartphone,
+  FileText,
+  Copy,
   Check,
   QrCode,
   DollarSign,
@@ -20,11 +20,13 @@ import {
   Calendar,
   TrendingUp,
   History,
-  Receipt
+  Receipt,
+  AlertCircle
 } from 'lucide-react'
 
 const Doacoes: React.FC = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [customAmount, setCustomAmount] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'boleto' | null>(null)
@@ -35,8 +37,21 @@ const Doacoes: React.FC = () => {
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [pixCopied, setPixCopied] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+
+  // Verificar status do pagamento ao retornar do Mercado Pago
+  useEffect(() => {
+    const status = searchParams.get('status')
+    if (status === 'success') {
+      setSuccess(true)
+    } else if (status === 'failure') {
+      setError('O pagamento não foi aprovado. Tente novamente.')
+    } else if (status === 'pending') {
+      setError('Pagamento pendente. Aguardando confirmação.')
+    }
+  }, [searchParams])
 
   const predefinedAmounts = [25, 50, 100, 200, 500]
   const pixKey = "12345678000195" // Instituto's PIX key
@@ -69,21 +84,34 @@ const Doacoes: React.FC = () => {
 
   const handleDonation = async () => {
     const amount = getFinalAmount()
-    if (!amount || !paymentMethod) return
+    if (!amount || !paymentMethod) {
+      setError('Por favor, selecione um valor e método de pagamento')
+      return
+    }
+
+    if (amount < 1) {
+      setError('O valor mínimo para doação é R$ 1,00')
+      return
+    }
 
     setLoading(true)
+    setError(null)
+
     try {
-      await donationService.create({
+      // Processar doação via Mercado Pago
+      const checkoutUrl = await processDonation({
+        amount,
         donor_name: donorInfo.name || undefined,
         donor_email: donorInfo.email || undefined,
-        amount,
-        payment_method: paymentMethod,
-        status: 'pending'
+        donor_phone: donorInfo.phone || undefined,
+        payment_method: paymentMethod
       })
-      setSuccess(true)
+
+      // Redirecionar para checkout do Mercado Pago
+      window.location.href = checkoutUrl
     } catch (error) {
       console.error('Failed to process donation:', error)
-    } finally {
+      setError('Erro ao processar doação. Tente novamente.')
       setLoading(false)
     }
   }
@@ -390,75 +418,56 @@ const Doacoes: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Método:</span>
                     <span className="font-semibold text-gray-800">
-                      {paymentMethod === 'pix' ? 'PIX' : 
+                      {paymentMethod === 'pix' ? 'PIX' :
                        paymentMethod === 'card' ? 'Cartão de Crédito' :
                        paymentMethod === 'boleto' ? 'Boleto Bancário' : 'Não selecionado'}
                     </span>
                   </div>
                 </div>
 
+                {/* Mensagem de erro */}
+                {error && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+                    <AlertCircle className="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-800">{error}</p>
+                  </div>
+                )}
+
                 {getFinalAmount() > 0 && paymentMethod && (
-                  <Button 
+                  <Button
                     onClick={handleDonation}
                     className="w-full mt-6"
                     size="lg"
                     loading={loading}
+                    disabled={loading}
                   >
                     <Heart className="w-5 h-5 mr-2" />
-                    {loading ? 'Processando...' : 'Confirmar Doação'}
+                    {loading ? 'Redirecionando...' : 'Pagar com Mercado Pago'}
                   </Button>
                 )}
               </Card>
 
-              {/* PIX Details */}
-              {paymentMethod === 'pix' && (
-                <Card variant="glass" className="p-6">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center gradient-text">
-                    <QrCode className="w-6 h-6 mr-2" />
-                    Dados do PIX
-                  </h3>
-                  
-                  <div className="text-center mb-6">
-                    <div className="w-32 h-32 bg-white rounded-lg mx-auto mb-4 flex items-center justify-center">
-                      <QrCode className="w-20 h-20 text-gray-400" />
-                    </div>
-                    <p className="text-sm text-gray-600">QR Code para pagamento</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Chave PIX (CNPJ)
-                      </label>
-                      <div className="flex items-center space-x-2">
-                        <Input
-                          value={pixKey}
-                          readOnly
-                          variant="glass"
-                          className="flex-1"
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={copyPixKey}
-                        >
-                          {pixCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-blue-800 mb-2">Como doar via PIX:</h4>
-                      <ol className="text-sm text-blue-700 space-y-1">
-                        <li>1. Abra o app do seu banco</li>
-                        <li>2. Escolha PIX e "Pagar com QR Code"</li>
-                        <li>3. Escaneie o código ou cole a chave</li>
-                        <li>4. Confirme o valor e finalize</li>
-                      </ol>
-                    </div>
-                  </div>
-                </Card>
-              )}
+              {/* Informação sobre processamento */}
+              <Card variant="glass" className="p-6">
+                <h3 className="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                  <Check className="w-5 h-5 mr-2 text-green-600" />
+                  Pagamento Seguro
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                  Seu pagamento será processado com segurança pelo <strong>Mercado Pago</strong>,
+                  a plataforma de pagamentos mais confiável do Brasil.
+                </p>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2 text-sm">Como funciona:</h4>
+                  <ol className="text-sm text-blue-700 space-y-1">
+                    <li>1. Clique em "Pagar com Mercado Pago"</li>
+                    <li>2. Você será redirecionado para a página segura do Mercado Pago</li>
+                    <li>3. Escolha seu método de pagamento preferido (PIX, Cartão ou Boleto)</li>
+                    <li>4. Finalize o pagamento</li>
+                    <li>5. Você receberá o comprovante por e-mail</li>
+                  </ol>
+                </div>
+              </Card>
 
               {/* Tax Deduction Info */}
               <Card variant="glass" className="p-6">

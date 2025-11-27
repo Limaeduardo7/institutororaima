@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
-import { Users, Calendar, FileText, MessageCircle, CreditCard, Settings } from 'lucide-react';
+import { Users, Calendar, FileText, MessageCircle, CreditCard, Settings, FolderOpen } from 'lucide-react';
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -50,6 +50,7 @@ export default function Admin() {
     { name: 'Ações Sociais', href: '/admin/social-actions', icon: Users },
     { name: 'Eventos', href: '/admin/events', icon: Calendar },
     { name: 'Documentos Financeiros', href: '/admin/financial-documents', icon: FileText },
+    { name: 'Documentos Institucionais', href: '/admin/documents', icon: FolderOpen },
     { name: 'Mensagens de Contato', href: '/admin/contact-messages', icon: MessageCircle },
     { name: 'Doações', href: '/admin/donations', icon: CreditCard },
     { name: 'Configurações', href: '/admin/settings', icon: Settings },

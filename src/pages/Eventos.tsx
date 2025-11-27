@@ -27,63 +27,9 @@ const Eventos: React.FC = () => {
         setSocialActions(actionsData)
       } catch (error) {
         console.error('Failed to load data:', error)
-        // Fallback data for demonstration
-        setEvents([
-          {
-            id: '1',
-            title: 'Feira de Adoção de Animais',
-            description: 'Evento especial para conectar famílias com animais que precisam de um lar. Mais de 50 cães e gatos estarão disponíveis para adoção.',
-            date: '2024-12-15',
-            location: 'Praça do Centro Cívico, Boa Vista - RR',
-            image_url: '/images/feira-adocao.jpg',
-            created_at: '2024-11-01',
-            updated_at: '2024-11-01'
-          },
-          {
-            id: '2',
-            title: 'Mutirão de Limpeza do Rio Branco',
-            description: 'Ação ambiental para limpeza das margens do Rio Branco com participação da comunidade local.',
-            date: '2024-12-20',
-            location: 'Orla do Rio Branco, Boa Vista - RR',
-            image_url: '/images/mutirao-limpeza.jpg',
-            created_at: '2024-11-05',
-            updated_at: '2024-11-05'
-          },
-          {
-            id: '3',
-            title: 'Natal Solidário 2024',
-            description: 'Distribuição de presentes e ceia natalina para famílias em situação de vulnerabilidade social.',
-            date: '2024-12-24',
-            location: 'Sede do Instituto, Jardim Bela Vista - RR',
-            image_url: '/images/natal-solidario.jpg',
-            created_at: '2024-11-10',
-            updated_at: '2024-11-10'
-          }
-        ])
-        setSocialActions([
-          {
-            id: '1',
-            title: 'Programa Alfabetização de Adultos',
-            description: 'Classes de alfabetização para adultos que não tiveram oportunidade de estudar na idade adequada.',
-            beneficiaries: 45,
-            status: 'active',
-            start_date: '2024-01-15',
-            image_url: '/images/alfabetizacao.jpg',
-            created_at: '2024-01-15',
-            updated_at: '2024-01-15'
-          },
-          {
-            id: '2',
-            title: 'Horta Comunitária Sustentável',
-            description: 'Projeto de criação e manutenção de hortas comunitárias para garantia de segurança alimentar.',
-            beneficiaries: 120,
-            status: 'active',
-            start_date: '2024-03-01',
-            image_url: '/images/horta-comunitaria.jpg',
-            created_at: '2024-03-01',
-            updated_at: '2024-03-01'
-          }
-        ])
+        // Em produção: deixar arrays vazios para mostrar mensagem apropriada
+        setEvents([])
+        setSocialActions([])
       } finally {
         setLoading(false)
       }

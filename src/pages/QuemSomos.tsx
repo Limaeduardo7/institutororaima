@@ -109,23 +109,23 @@ const QuemSomos: React.FC = () => {
       bio: 'Formado em Gestão de Análise de Sistemas, Gestão Pública, especialista no terceiro setor, Comércio Exterior e Ciência Pública. Professor e fundador do Instituto Estação, tem a responsabilidade de liderar a organização, definir sua direção estratégica e garantir que alcance os objetivos de forma eficaz. Estabelece a cultura organizacional e toma decisões cruciais para o sucesso do Instituto. Originou a identificação de promover aos jovens de baixa renda a inclusão social oferecendo esporte, palestras e cursos de educação profissional e capacitação para o mercado de trabalho, utilizando recursos tecnológicos nas atividades sociais e culturais.',
       specialties: ['Gestão Pública', 'Terceiro Setor', 'Educação Profissional', 'Inclusão Social', 'Tecnologia Social'],
       icon: <Crown className="w-6 h-6" />,
-      image: '/Jarlisson.png'
+      image: '/WhatsApp Image 2025-11-17 at 18.20.19.jpeg'
     },
     {
-      name: 'Dr. Wisney Oliveira',
-      role: 'Diretor Jurídico Executivo',
-      bio: 'Natural de Boa Vista - Roraima, Advogado atuante desde 2019, com experiência voltada para o Direito Administrativo e Assessoria Empresarial, em especial entidades do terceiro setor, ocupando junto ao Instituto Estação a função de Diretor Jurídico Executivo fornecendo suporte legal balizando as decisões e atividades do instituto em conformidade com a lei, atuando de forma administrativas e judicial.',
-      specialties: ['Direito Administrativo', 'Direito do Terceiro Setor', 'Compliance Jurídico', 'Consultoria Legal'],
+      name: 'Naila Rodrigues',
+      role: 'Coordenadora',
+      bio: 'Formada em Educadora Física, Pedagoga e Técnica em Enfermagem. Tem o propósito de cuidar de vidas e ensinar através do Instituto Estação.',
+      specialties: ['Educação Física', 'Pedagogia', 'Enfermagem', 'Cuidado Social'],
       icon: <User className="w-6 h-6" />,
-      image: '/Wisney.png'
+      image: '/WhatsApp Image 2025-11-17 at 18.14.35.jpeg'
     },
     {
-      name: 'Alexandra Alves da Silva',
-      role: 'Diretora Financeira e Advogada',
-      bio: 'Gerencia todas as atividades financeiras do Instituto, incluindo planejamento financeiro, análise de desempenho, controle e tomada de decisões estratégicas. Supervisiona o departamento financeiro, garante a conformidade com leis e regulamentos, e trabalha para otimizar o desempenho financeiro da instituição.',
-      specialties: ['Gestão Financeira', 'Direito', 'Planejamento Estratégico', 'Compliance'],
+      name: 'Nara Araújo',
+      role: 'Administradora',
+      bio: 'Formada em Administração, com qualificação em Gestão Pública e base técnica em Magistério e Patologia Clínica. Profissional versátil, dedicada e comprometida em unir gestão, educação e saúde para gerar resultados, eficiência e impacto positivo.',
+      specialties: ['Administração', 'Gestão Pública', 'Magistério', 'Patologia Clínica'],
       icon: <User className="w-6 h-6" />,
-      image: '/Alexandra.png'
+      image: '/WhatsApp Image 2025-11-17 at 18.18.25.jpeg'
     }
   ]
 
