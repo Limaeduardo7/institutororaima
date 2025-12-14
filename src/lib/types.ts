@@ -40,10 +40,11 @@ export interface Donation {
   donor_email?: string
   donor_phone?: string
   amount: number
-  payment_method: 'pix' | 'card' | 'boleto'
+  payment_method: 'pix' | 'card' | 'boleto' | 'stripe'
   status: 'pending' | 'completed' | 'failed'
   transaction_id?: string
   message?: string
+  currency?: string
   created_at: string
 }
 

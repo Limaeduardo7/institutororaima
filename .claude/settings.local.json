@@ -23,7 +23,8 @@
       "Bash(npm config get:*)",
       "Bash(ping:*)",
       "Bash(netlify deploy:*)",
-      "Bash(netlify:*)"
+      "Bash(netlify:*)",
+      "Bash(node -e:*)"
     ],
     "deny": []
   }

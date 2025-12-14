@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Loading } from '../components/ui/Loading'
@@ -10,6 +11,7 @@ import { Input } from '../components/ui/Input'
 
 const Eventos: React.FC = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [events, setEvents] = useState<Event[]>([])
   const [socialActions, setSocialActions] = useState<SocialAction[]>([])
   const [loading, setLoading] = useState(true)
@@ -58,9 +60,9 @@ const Eventos: React.FC = () => {
 
   const getStatusLabel = (status: SocialAction['status']) => {
     switch (status) {
-      case 'active': return 'Em Andamento'
-      case 'completed': return 'Concluído'
-      case 'planned': return 'Planejado'
+      case 'active': return t('events.status.active')
+      case 'completed': return t('events.status.completed')
+      case 'planned': return t('events.status.planned')
       default: return status
     }
   }
@@ -81,11 +83,10 @@ const Eventos: React.FC = () => {
       <section className="hero-fullscreen hero-events">
         <div className="hero-content animate-fade-in">
           <h1 className="hero-title gradient-text animate-slide-up mb-8 text-balance">
-            Eventos e Ações
+            {t('events.hero_title')}
           </h1>
           <p className="body-large max-w-4xl mx-auto text-balance">
-            Conheça nossos eventos próximos e acompanhe as ações sociais 
-            que transformam vidas em Roraima
+            {t('events.hero_subtitle')}
           </p>
         </div>
       </section>
@@ -100,7 +101,7 @@ const Eventos: React.FC = () => {
                 onClick={() => setFilter('all')}
                 size="sm"
               >
-                Todos
+                {t('events.filter_all')}
               </Button>
               <Button
                 variant={filter === 'events' ? 'primary' : 'outline'}
@@ -108,7 +109,7 @@ const Eventos: React.FC = () => {
                 size="sm"
               >
                 <Calendar className="w-4 h-4 mr-2" />
-                Eventos
+                {t('events.filter_events')}
               </Button>
               <Button
                 variant={filter === 'actions' ? 'primary' : 'outline'}
@@ -116,14 +117,14 @@ const Eventos: React.FC = () => {
                 size="sm"
               >
                 <Users className="w-4 h-4 mr-2" />
-                Ações Sociais
+                {t('events.filter_actions')}
               </Button>
             </div>
-            
+
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
-                placeholder="Buscar eventos e ações..."
+                placeholder={t('events.search_placeholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-64"
@@ -140,16 +141,16 @@ const Eventos: React.FC = () => {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold mb-4 gradient-text">
-                Próximos Eventos
+                {t('events.upcoming_events_title')}
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Participe dos nossos eventos e ajude a fortalecer nossa comunidade
+                {t('events.upcoming_events_subtitle')}
               </p>
             </div>
 
             {loading ? (
               <div className="flex justify-center">
-                <Loading size="lg" text="Carregando eventos..." />
+                <Loading size="lg" text={t('events.loading') || 'Carregando...'} />
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -165,7 +166,7 @@ const Eventos: React.FC = () => {
                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-2">
                           <ImageIcon className="w-8 h-8" />
                         </div>
-                        <p className="text-sm opacity-90">Imagem do Evento</p>
+                        <p className="text-sm opacity-90">{t('events.event_image')}</p>
                       </div>
                     </div>
                     
@@ -191,12 +192,12 @@ const Eventos: React.FC = () => {
                         </div>
                       </div>
                       
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="w-full group-hover:bg-primary-50"
                         onClick={() => navigate(`/evento/${event.id}`)}
                       >
-                        Saiba Mais
+                        {t('events.learn_more')}
                       </Button>
                     </CardContent>
                   </Card>
@@ -213,16 +214,16 @@ const Eventos: React.FC = () => {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bold mb-4 gradient-text">
-                Ações Sociais em Andamento
+                {t('events.ongoing_actions_title')}
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Programas contínuos que fazem a diferença na vida das pessoas
+                {t('events.ongoing_actions_subtitle')}
               </p>
             </div>
 
             {loading ? (
               <div className="flex justify-center">
-                <Loading size="lg" text="Carregando ações sociais..." />
+                <Loading size="lg" text={t('events.loading_actions')} />
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -238,7 +239,7 @@ const Eventos: React.FC = () => {
                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-2">
                           <Users className="w-8 h-8" />
                         </div>
-                        <p className="text-sm opacity-90">Ação Social</p>
+                        <p className="text-sm opacity-90">{t('events.social_action')}</p>
                       </div>
                     </div>
                     
@@ -260,17 +261,17 @@ const Eventos: React.FC = () => {
                       
                       <div className="space-y-2 mb-4">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500">Beneficiários:</span>
-                          <span className="font-semibold text-primary-600">{action.beneficiaries} pessoas</span>
+                          <span className="text-gray-500">{t('events.beneficiaries')}:</span>
+                          <span className="font-semibold text-primary-600">{action.beneficiaries} {t('events.people')}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500">Início:</span>
+                          <span className="text-gray-500">{t('events.start_date')}:</span>
                           <span className="font-semibold text-gray-700">{formatDate(action.start_date)}</span>
                         </div>
                       </div>
-                      
+
                       <Button variant="outline" className="w-full group-hover:bg-primary-50">
-                        Ver Detalhes
+                        {t('events.learn_more')}
                       </Button>
                     </CardContent>
                   </Card>
@@ -285,20 +286,19 @@ const Eventos: React.FC = () => {
       <section className="py-20 px-4 bg-gradient-to-r from-primary-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center text-white">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Participe dos Nossos Eventos
+            {t('events.cta_title')}
           </h2>
           <p className="text-lg mb-8 opacity-90">
-            Sua presença faz a diferença. Junte-se a nós em nossos próximos eventos 
-            e ações sociais em Roraima.
+            {t('events.cta_subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="glass" className="text-primary-800 font-semibold" onClick={() => navigate('/eventos')}>
               <Calendar className="w-5 h-5 mr-2" />
-              Ver Agenda Completa
+              {t('events.view_full_schedule')}
             </Button>
             <Button size="lg" variant="outline" className="border-white text-primary-800 font-semibold bg-white/90 hover:bg-white hover:text-primary-600" onClick={() => navigate('/contato')}>
               <Users className="w-5 h-5 mr-2" />
-              Seja Voluntário
+              {t('events.become_volunteer')}
             </Button>
           </div>
         </div>

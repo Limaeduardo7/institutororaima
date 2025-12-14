@@ -1,0 +1,593 @@
+{
+  "languages": {
+    "pt-BR": "Português (Brasil)",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "tr": "Türkçe",
+    "ar": "العربية"
+  },
+  "header": {
+    "home": "Home",
+    "about": "About Us",
+    "events": "Events",
+    "donations": "Donations",
+    "transparency": "Transparency",
+    "documents": "Documents",
+    "contact": "Contact",
+    "location": "Location"
+  },
+  "home": {
+    "hero": {
+      "title": "Transforming Lives in Roraima",
+      "subtitle": "Since 1997 bringing hope, education and dignity to those who need it most",
+      "cta": "Make a Donation",
+      "learn_more": "Know Our Work"
+    },
+    "stats": {
+      "years": "Years of History",
+      "lives": "Lives Impacted",
+      "projects": "Active Projects",
+      "transparency": "Transparency"
+    },
+    "principles": {
+      "title": "Our Fundamental Principles",
+      "mission_title": "Mission",
+      "mission_text": "To promote human and social development of Roraima communities, offering sustainable opportunities for education, health and citizenship.",
+      "vision_title": "Vision",
+      "vision_text": "To be recognized as a reference in social development in Northern Brazil, creating positive and lasting impact in the lives of communities.",
+      "values_title": "Values",
+      "values_text": "Total transparency, active solidarity, human dignity, environmental sustainability and commitment to social transformation."
+    },
+    "projects": {
+      "title": "Transformative Projects",
+      "subtitle": "Learn about some of the initiatives that are creating real impact and changing lives in our community",
+      "loading": "Loading projects...",
+      "active": "Active Project",
+      "beneficiaries": "beneficiaries served",
+      "active_since": "Active since",
+      "learn_more": "Learn More",
+      "view_all": "View All Projects"
+    },
+    "cta": {
+      "title": "Be Part of This Transformation",
+      "subtitle": "Your contribution can change lives. Join us in this journey of sustainable social impact in Roraima.",
+      "donate": "Donate Now",
+      "visit": "Visit Our Headquarters"
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "To promote social and human development through actions that guarantee dignity, education and opportunities for vulnerable communities in Roraima."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "description": "To be a reference in social transformation in the state of Roraima, recognized for excellence and positive impact on people's lives."
+    },
+    "values": {
+      "title": "Our Values",
+      "description": "Transparency, Social Commitment, Respect for Human Dignity, Sustainability and Network Collaboration."
+    },
+    "impact": {
+      "title": "Our Impact",
+      "subtitle": "Numbers that show the transformation we generate together",
+      "beneficiaries": "Beneficiaries Served",
+      "projects": "Completed Projects",
+      "volunteers": "Engaged Volunteers",
+      "partners": "Active Partners"
+    },
+    "causes": {
+      "title": "Our Causes",
+      "subtitle": "Areas where we work to transform lives",
+      "food": {
+        "title": "Food Security",
+        "description": "Distribution of food baskets and meals to families in social vulnerability"
+      },
+      "education": {
+        "title": "Education",
+        "description": "School support programs, adult literacy and professional training"
+      },
+      "health": {
+        "title": "Health",
+        "description": "Prevention campaigns, basic care and community health guidance"
+      },
+      "housing": {
+        "title": "Housing",
+        "description": "Support in improving housing and access to dignified living conditions"
+      }
+    },
+    "testimonials": {
+      "title": "Stories of Transformation",
+      "subtitle": "See the real impact on people's lives"
+    },
+    "cta": {
+      "title": "Be Part of the Change",
+      "subtitle": "Your contribution transforms lives. Together, we can do more!",
+      "donate": "Make a Donation",
+      "volunteer": "Become a Volunteer"
+    },
+    "footer": {
+      "tagline": "Transforming lives since 1997",
+      "description": "27 years dedicated to social and human development in Roraima, promoting education, health, housing and opportunities for all.",
+      "quick_links": "Quick Links",
+      "contact": "Contact",
+      "office": "Administrative office",
+      "rights": "All rights reserved",
+      "developed_by": "Developed by"
+    }
+  },
+  "about": {
+    "hero_title": "Our Story",
+    "hero_subtitle": "27 years transforming lives in Roraima through commitment to sustainable social and human development",
+    "institute_title": "Instituto Estação",
+    "institute_description_1": "Founded in <strong>1997</strong> in the city of Boa Vista, Roraima, Instituto Estação was born from the dream of a group of volunteers committed to transforming the social reality of Brazil's northernmost state.",
+    "institute_description_2": "For over two decades, we have been a bridge between hope and reality for thousands of families from Roraima. Our work focuses on the areas of <strong>education</strong>, <strong>health</strong>, <strong>housing</strong>, <strong>food security</strong> and <strong>income generation</strong>.",
+    "institute_description_3": "We recognize Roraima as a state of great potential and unique challenges. Therefore, we develop specific programs that respect local cultural diversity, including indigenous communities, Venezuelan immigrants and families in vulnerable situations.",
+    "timeline_title": "Our Journey",
+    "timeline": {
+      "1997_title": "Foundation of the Institute",
+      "1997_description": "Instituto Estação is born in Boa Vista with the goal of promoting social development in Roraima",
+      "2000_title": "First Educational Programs",
+      "2000_description": "Launch of literacy and school support programs for children and adults",
+      "2005_title": "Expansion to Community Health",
+      "2005_description": "Creation of basic health program and prevention campaigns",
+      "2010_title": "Solidarity Housing",
+      "2010_description": "Launch of affordable housing project and home renovation",
+      "2015_title": "Food Security",
+      "2015_description": "Creation of food basket distribution program and community gardens",
+      "2020_title": "Professional Training",
+      "2020_description": "Launch of vocational courses and income generation program"
+    },
+    "achievements": {
+      "years": "Years of Operation",
+      "lives": "Lives Transformed",
+      "programs": "Active Programs",
+      "neighborhoods": "Neighborhoods Served",
+      "partners": "Local Partners",
+      "transparency": "Transparency"
+    },
+    "founders_title": "Our Founders and Leadership",
+    "founders_subtitle": "Meet the visionary people who started this journey of social transformation in Roraima",
+    "specialties": "Specialties",
+    "founders": {
+      "jarlisson": {
+        "role": "Founding President",
+        "bio": "Holds degrees in Systems Analysis Management, Public Management, specialist in the third sector, Foreign Trade and Public Science. Professor and founder of Instituto Estação, he has the responsibility of leading the organization, defining its strategic direction and ensuring it achieves its objectives effectively. He establishes the organizational culture and makes crucial decisions for the Institute's success. He originated the vision to promote social inclusion for low-income youth by offering sports, lectures and professional education courses and training for the job market, using technological resources in social and cultural activities."
+      },
+      "naila": {
+        "role": "Coordinator",
+        "bio": "Holds degrees in Physical Education, Pedagogy and Nursing Technician. Her purpose is to care for lives and teach through Instituto Estação."
+      },
+      "nara": {
+        "role": "Administrator",
+        "bio": "Holds a degree in Administration, with qualifications in Public Management and technical background in Teaching and Clinical Pathology. A versatile, dedicated professional committed to combining management, education and health to generate results, efficiency and positive impact."
+      }
+    },
+    "leadership_message_title": "Leadership Message",
+    "leadership_message_text": "We founded Instituto Estação with the conviction that every person deserves opportunities to grow and prosper. For over two decades, we have witnessed extraordinary transformations in the lives of the families we serve. Our mission continues to be a bridge between the current reality and the future we dream of for Roraima.",
+    "leadership_message_author": "Instituto Estação Founding Team",
+    "values_title": "Our Values",
+    "values_subtitle": "Principles that guide all our actions and decisions for social transformation",
+    "values": {
+      "transparency_title": "Transparency",
+      "transparency_description": "Clear and accessible accountability of all resources received and applied",
+      "solidarity_title": "Solidarity",
+      "solidarity_description": "Commitment to collective well-being and mutual support among communities",
+      "dignity_title": "Dignity",
+      "dignity_description": "Respect for human dignity in all actions and programs developed",
+      "sustainability_title": "Sustainability",
+      "sustainability_description": "Development of lasting solutions that promote community autonomy",
+      "inclusion_title": "Inclusion",
+      "inclusion_description": "Guarantee of equitable access to our programs, without any form of discrimination",
+      "innovation_title": "Innovation",
+      "innovation_description": "Constant search for new methodologies and effective social technologies"
+    },
+    "roraima_title": "Roraima: Our Home",
+    "roraima_description_1": "Roraima is a unique state, with geographical, cultural and social characteristics that require specific approaches to social development.",
+    "roraima_description_2": "Our headquarters is located in <strong>Jardim Bela Vista</strong>, in Boa Vista, but our work extends to several neighborhoods in the capital and municipalities in the interior of the state.",
+    "roraima_description_3": "We work directly with indigenous communities, Venezuelan migrant families, and urban and rural populations in situations of social vulnerability.",
+    "our_location": "Our Location",
+    "our_projects": "Discover Our Projects",
+    "reach_title": "Our Reach",
+    "reach": {
+      "capital": "Boa Vista (Capital)",
+      "capital_value": "8 neighborhoods served",
+      "interior": "Interior of the State",
+      "interior_value": "15 municipalities",
+      "indigenous": "Indigenous Communities",
+      "indigenous_value": "6 communities",
+      "migrants": "Migrant Families",
+      "migrants_value": "350+ families"
+    },
+    "cta_title": "Be Part of Our Story",
+    "cta_subtitle": "We invite you to be part of this journey of social transformation in Roraima. Together, we can write a better future.",
+    "contribute": "I Want to Contribute",
+    "volunteer": "Become a Volunteer"
+  },
+  "events": {
+    "hero_title": "Our Events and Social Projects",
+    "hero_subtitle": "Discover the initiatives that are transforming lives in Roraima",
+    "filter_all": "All",
+    "filter_events": "Events",
+    "filter_actions": "Social Actions",
+    "filter_active": "Active",
+    "filter_completed": "Completed",
+    "search_placeholder": "Search events and actions...",
+    "no_events": "No events found",
+    "beneficiaries": "beneficiaries",
+    "people": "people",
+    "start_date": "Start",
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "planned": "Planned"
+    },
+    "learn_more": "Learn More",
+    "back_to_list": "Back to Events",
+    "gallery": "Gallery",
+    "objectives": "Objectives",
+    "results": "Results",
+    "upcoming_events_title": "Upcoming Events",
+    "upcoming_events_subtitle": "Join our events and help strengthen our community",
+    "event_image": "Event Image",
+    "ongoing_actions_title": "Ongoing Social Actions",
+    "ongoing_actions_subtitle": "Continuous programs that make a difference in people's lives",
+    "loading_actions": "Loading social actions...",
+    "social_action": "Social Action",
+    "cta_title": "Join Our Events",
+    "cta_subtitle": "Your presence makes a difference. Join us in our upcoming events and social actions in Roraima.",
+    "view_full_schedule": "View Full Schedule",
+    "become_volunteer": "Become a Volunteer"
+  },
+  "donations": {
+    "hero_title": "Make Your Donation",
+    "hero_subtitle": "Your contribution transforms lives in Roraima",
+    "donation_type": "Donation Type",
+    "national": "National Donation (BRL)",
+    "international": "International Donation",
+    "amount": "Choose Amount",
+    "custom_amount": "Other amount",
+    "custom_amount_placeholder": "Enter amount",
+    "currency": "Currency",
+    "select_currency": "Select Currency",
+    "donor_info": "Your Information (Optional)",
+    "name": "Full name",
+    "email": "Email",
+    "phone": "Phone",
+    "message": "Message (optional)",
+    "payment_method": "Payment Method",
+    "pix": "PIX",
+    "pix_description": "Instant and free",
+    "card": "Credit Card",
+    "card_description": "Installments available",
+    "boleto": "Bank Slip",
+    "boleto_description": "Due in 3 days",
+    "stripe": "International Card",
+    "stripe_card": "Credit/Debit Card",
+    "stripe_description": "Powered by Stripe - Secure international payment",
+    "donate_button": "Pay with Mercado Pago",
+    "donate_stripe": "Pay with Stripe",
+    "processing": "Processing...",
+    "thank_you": "Donation Confirmed!",
+    "thank_you_message": "Thank you for your generosity. Your donation will make a difference in many people's lives.",
+    "new_donation": "Make New Donation",
+    "error_select_amount": "Please select an amount and payment method",
+    "error_minimum_amount": "The minimum donation is R$ 1.00",
+    "error_minimum_amount_intl": "Minimum donation is $1.00",
+    "error_processing": "Error processing donation. Please try again.",
+    "payment_not_approved": "Payment was not approved. Please try again.",
+    "payment_pending": "Payment pending. Awaiting confirmation.",
+    "method_not_selected": "Not selected",
+    "method_not_selected_intl": "Not selected",
+    "impact_numbers": {
+      "food_basket": "food basket",
+      "school_kit": "Complete school kit",
+      "medical_consultation": "Medical consultation",
+      "basic_renovation": "Basic renovation"
+    },
+    "impact_title": "Your Impact",
+    "impact_subtitle": "See how your donation can help",
+    "history_show": "View Donation History",
+    "history_hide": "Hide History",
+    "history_title": "Donation History",
+    "history_subtitle": "Track all your contributions to Instituto Estação",
+    "total_donated": "Total Donated",
+    "total_donations": "Donations Made",
+    "average_donation": "Average per Donation",
+    "your_donations": "Your Donations",
+    "purpose": "Purpose",
+    "receipt": "Receipt",
+    "proof": "Proof",
+    "donation_status": {
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "cancelled": "Cancelled"
+    },
+    "causes": {
+      "food_title": "Food Solidarity",
+      "food_description": "Food baskets for vulnerable families",
+      "education_title": "Children's Education",
+      "education_description": "School supplies and educational support",
+      "health_title": "Community Health",
+      "health_description": "Medical care and medications",
+      "housing_title": "Social Housing",
+      "housing_description": "Home renovation and construction"
+    },
+    "impact_causes_title": "Where Your Donation Helps",
+    "impact_causes_subtitle": "Learn about the main areas where we direct the resources received",
+    "cta_title": "Every Donation Makes a Difference",
+    "cta_subtitle": "There is no small donation when the heart is big. Join us in this mission to transform lives in Roraima.",
+    "recurring_donation": "Recurring Donation",
+    "volunteer": "Become a Volunteer",
+    "tax_deduction_title": "Tax Deduction",
+    "tax_deduction_text": "Your donation may be tax deductible. You will receive the receipt by email to use in your annual tax return.",
+    "summary_title": "Donation Summary",
+    "summary_amount": "Amount",
+    "summary_method": "Method",
+    "secure_payment": "Secure Payment",
+    "secure_payment_intl": "Secure Payment",
+    "mercadopago_info": "Your payment will be securely processed by <strong>Mercado Pago</strong>, Brazil's most trusted payment platform.",
+    "stripe_info": "Your payment will be securely processed by <strong>Stripe</strong>, the world's leading international payment platform trusted by millions.",
+    "how_it_works": "How it works:",
+    "how_it_works_intl": "How it works:",
+    "mercadopago_steps": {
+      "step1": "Click \"Pay with Mercado Pago\"",
+      "step2": "You'll be redirected to Mercado Pago's secure page",
+      "step3": "Choose your preferred payment method (PIX, Card or Bank Slip)",
+      "step4": "Complete the payment",
+      "step5": "You'll receive the receipt via email"
+    },
+    "stripe_steps": {
+      "step1": "Click \"Pay with Stripe\"",
+      "step2": "You'll be redirected to Stripe's secure checkout page",
+      "step3": "Enter your credit/debit card details",
+      "step4": "Complete the payment",
+      "step5": "You'll receive a receipt via email"
+    }
+  },
+  "transparency": {
+    "hero_title": "Total Transparency",
+    "hero_subtitle": "Clear and accessible accountability of all our resources",
+    "financial_docs": "Financial Documents",
+    "annual_reports": "Annual Reports",
+    "certifications": "Certifications and Titles",
+    "download": "Download",
+    "view": "View",
+    "no_documents": "No documents available at the moment",
+    "loading": "Loading documents...",
+    "document_types": {
+      "all": "All",
+      "receipt": "Receipts",
+      "report": "Reports",
+      "statement": "Statements",
+      "other": "Others"
+    },
+    "financial_stats": {
+      "revenue_title": "Revenue 2023",
+      "projects_title": "Active Projects",
+      "efficiency_title": "Efficiency",
+      "beneficiaries_title": "Beneficiaries",
+      "vs_previous_year": "vs 2022"
+    },
+    "certifications_subtitle": "Our commitment to transparency is recognized by competent authorities",
+    "certifications_cards": {
+      "cnpj": {
+        "title": "CNPJ Active (National Registry)",
+        "description": "National Registry of Legal Entities regularized and active since 1997",
+        "status": "Active"
+      },
+      "public_utility": {
+        "title": "Public Utility",
+        "description": "State Public Utility Title granted by the Government of Roraima",
+        "status": "Valid"
+      },
+      "audit": {
+        "title": "External Audit",
+        "description": "Financial statements audited by an independent firm annually",
+        "status": "2023"
+      }
+    },
+    "financial_docs_subtitle": "Access our reports and receipts organized by year",
+    "filters_label": "Filters:",
+    "year_label": "Year:",
+    "type_label": "Type:",
+    "no_documents_subtitle": "There are no documents for the selected filters.",
+    "commitment_title": "Our Commitment to Transparency",
+    "commitment_text": "Transparency is one of the fundamental pillars of Instituto Estação. We believe that every donor has the right to know exactly how their resources are being used and what impact is being generated in the community.",
+    "commitment_cards": {
+      "accountability": {
+        "title": "Accountability",
+        "description": "We publish detailed quarterly reports of all revenues, expenses and investments made, allowing anyone to monitor resource management."
+      },
+      "audit": {
+        "title": "Independent Audit",
+        "description": "Our financial statements are audited annually by an independent firm, ensuring compliance with accounting standards and third sector legislation."
+      }
+    },
+    "cta_title": "Transparency is Our Priority",
+    "cta_subtitle": "Didn't find the document you're looking for? Contact us and we will be happy to provide the necessary information.",
+    "contact_button": "Contact Us",
+    "annual_report_button": "Annual Report 2023"
+  },
+  "documents": {
+    "hero_title": "Institutional Documents",
+    "hero_subtitle": "Access our documents, statutes and reports",
+    "search": "Search documents...",
+    "search_placeholder": "Enter title or description...",
+    "filters_title": "Filters",
+    "category_label": "Category",
+    "year_label": "Year",
+    "all_categories": "All Categories",
+    "all_years": "All Years",
+    "showing_results": "Showing",
+    "of": "of",
+    "documents_count": "document(s)",
+    "loading": "Loading documents...",
+    "error_loading": "Error loading documents",
+    "no_documents": "No documents found",
+    "adjust_filters": "Try adjusting the search filters",
+    "no_documents_yet": "No documents registered yet",
+    "reference_year": "Reference year:",
+    "download": "Download",
+    "view_pdf": "View PDF",
+    "categories": {
+      "estatuto": "Statute",
+      "ata": "Minutes",
+      "relatorio": "Reports",
+      "certidao": "Certificates",
+      "outros": "Others"
+    },
+    "info_section": {
+      "title": "About Institutional Documents",
+      "text1": "All documents made available in this section are public and reflect our commitment to transparency and good governance.",
+      "text2": "If you need a specific document that is not available here, contact us through the Contact page."
+    }
+  },
+  "contact": {
+    "hero_title": "Get in Touch",
+    "hero_subtitle": "We are here to listen to you. Send your message!",
+    "form_title": "Send Your Message",
+    "name": "Full name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "subject": "Subject",
+    "message": "Message",
+    "message_placeholder": "Tell us how we can help...",
+    "send": "Send Message",
+    "sending": "Sending...",
+    "success": "Message sent successfully!",
+    "success_description": "Thank you for your contact. We will respond shortly.",
+    "send_new_message": "Send New Message",
+    "error": "Error sending message. Please try again.",
+    "info_title": "Contact Information",
+    "info_description": "Our team is ready to assist you and clarify all your questions about our projects and how you can contribute.",
+    "address": "Address",
+    "phone_label": "Phone",
+    "email_label": "Email",
+    "social": "Social Media",
+    "office": "Administrative Office",
+    "office_label": "Administrative office:",
+    "business_hours": "Business Hours",
+    "monday_friday": "Monday to Friday: 7:30 AM to 5:30 PM",
+    "saturday": "Saturdays: 8 AM to 12 PM",
+    "sunday": "Sundays: Closed",
+    "validation": {
+      "name_required": "Name is required",
+      "email_required": "Email is required",
+      "email_invalid": "Invalid email",
+      "subject_required": "Subject is required",
+      "message_required": "Message is required"
+    },
+    "cta": {
+      "title": "Let's Transform Lives Together",
+      "subtitle": "Your participation is essential for us to continue our social development work in Roraima.",
+      "directions_button": "Get Directions",
+      "whatsapp_button": "WhatsApp"
+    }
+  },
+  "location": {
+    "hero_title": "Our Location",
+    "hero_subtitle": "Visit our headquarters in Boa Vista, Roraima",
+    "main_address": "Main Address",
+    "admin_office": "Administrative Office",
+    "visit_us": "Come Visit Us",
+    "opening_hours": "Opening Hours",
+    "monday_friday": "Monday to Friday",
+    "directions": "How to Get There",
+    "by_car": "By car",
+    "by_bus": "By bus",
+    "nearby": "Nearby Landmarks",
+    "full_address_title": "Full Address",
+    "instituto_name": "Instituto Estação",
+    "office_label": "Administrative office:",
+    "open_google_maps": "Open in Google Maps",
+    "open_waze": "Open in Waze",
+    "monday_friday_hours": "7:30 AM to 5:30 PM",
+    "saturday": "Saturdays",
+    "saturday_hours": "8 AM to 12 PM",
+    "sunday": "Sundays",
+    "sunday_closed": "Closed",
+    "visit_notice_title": "Visitation:",
+    "visit_notice_text": "We recommend scheduling your visit in advance to ensure we can receive you properly.",
+    "quick_contact": "Quick Contact",
+    "main_phone": "Main Phone",
+    "whatsapp_label": "WhatsApp",
+    "call_whatsapp": "Call on WhatsApp",
+    "interactive_map": "Interactive Map",
+    "map_title": "Instituto Estação Location",
+    "about_location_title": "About the Location",
+    "about_location_text1": "Our headquarters is strategically located in the Bela Vista neighborhood, one of the regions of Boa Vista, facilitating access for both beneficiaries and visitors.",
+    "about_location_text2": "The area is well served by public transportation and has easy access through the main roads of the city. Our administrative office in Rorainópolis also serves the local population.",
+    "transport_subtitle": "Various transportation options to facilitate your visit",
+    "by_car_title": "By Car",
+    "by_car_text": "Street parking available. Access via Av. Major Williams and other roads in the Jardim Bela Vista neighborhood.",
+    "public_transport_title": "Public Transportation",
+    "public_transport_text": "Several bus lines serve the region. Nearby stops on Av. Major Williams and surrounding areas.",
+    "apps_title": "Apps",
+    "apps_text": "Uber, 99 and other transportation apps normally serve the region with good coverage.",
+    "cta": {
+      "title": "Schedule Your Visit",
+      "subtitle": "Get to know our work up close and discover how you can be part of this social transformation in Roraima.",
+      "schedule_button": "Schedule Visit",
+      "directions_button": "Get Directions"
+    }
+  },
+  "admin": {
+    "title": "Admin - Instituto Estação",
+    "panel": "Admin Panel",
+    "password_label": "Administrator Password",
+    "login": "Login",
+    "logout": "Logout",
+    "incorrect_password": "Incorrect password",
+    "nav": {
+      "social_actions": "Social Actions",
+      "events": "Events",
+      "financial_documents": "Financial Documents",
+      "documents": "Institutional Documents",
+      "contact_messages": "Contact Messages",
+      "donations": "Donations",
+      "settings": "Settings"
+    }
+  },
+  "event_details": {
+    "loading": "Loading event...",
+    "not_found": "Event not found",
+    "not_found_message": "The event you are looking for does not exist or has been removed.",
+    "back_to_events": "Back to Events",
+    "participate": "Participate in This Event",
+    "your_presence": "Your presence makes a difference",
+    "registration_confirmed": "Registration Confirmed!",
+    "confirmation_email": "You will receive more details by email",
+    "confirm_presence": "Confirm Attendance",
+    "confirming": "Confirming...",
+    "share_event": "Share Event",
+    "link_copied": "Link copied to clipboard!",
+    "event_image": "Event Image",
+    "photo_gallery_soon": "Photo gallery coming soon",
+    "about_event": "About the Event",
+    "what_to_expect": "What to expect?",
+    "organized_activities": "Organized and structured activities",
+    "experienced_volunteers": "Team of experienced volunteers",
+    "welcoming_environment": "Welcoming and inclusive environment",
+    "make_difference": "Opportunity to make a difference",
+    "how_to_participate": "How to participate?",
+    "participation_text": "To participate in this event, simply confirm your attendance by clicking the button. Prior registration is not required, but your confirmation helps us better organize the event and ensure we have adequate facilities for all participants.",
+    "important_info": "Important Information",
+    "entry": "Entry",
+    "free_entry": "Free for all participants",
+    "age": "Age",
+    "all_ages": "Event open to all ages",
+    "parking": "Parking",
+    "parking_info": "Available on the street near the venue",
+    "accessibility": "Accessibility",
+    "accessibility_info": "Venue adapted for people with reduced mobility",
+    "event_questions": "Questions About the Event?",
+    "business_hours": "Business hours",
+    "response_time": "Response within 24h",
+    "location": "Location",
+    "map_location": "Venue Map",
+    "how_to_get_there": "How to Get There",
+    "other_events": "Other Events",
+    "other_events_text": "Check out other events and actions we have planned",
+    "view_all_events": "View All Events"
+  }
+}

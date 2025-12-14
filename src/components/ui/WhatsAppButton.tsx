@@ -26,13 +26,10 @@ const WhatsAppButton: React.FC = () => {
         <div className="relative">
           <button
             onClick={handleWhatsAppClick}
-            className="relative bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 animate-pulse"
+            className="relative bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
             aria-label="Falar no WhatsApp"
           >
             <MessageSquare className="w-6 h-6" />
-            
-            {/* Ripple effect */}
-            <div className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-75"></div>
           </button>
           
           {/* Close button - moved outside main button */}

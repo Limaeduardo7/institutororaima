@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card } from '../components/ui/Card'
 import { documentService } from '../lib/supabaseClient'
 import type { Document } from '../lib/types'
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react'
 
 const Documentos: React.FC = () => {
+  const { t } = useTranslation()
   const [documents, setDocuments] = useState<Document[]>([])
   const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
@@ -23,11 +25,11 @@ const Documentos: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
   const categories = {
-    estatuto: 'Estatuto',
-    ata: 'Atas',
-    relatorio: 'Relatórios',
-    certidao: 'Certidões',
-    outros: 'Outros'
+    estatuto: t('documents.categories.estatuto'),
+    ata: t('documents.categories.ata'),
+    relatorio: t('documents.categories.relatorio'),
+    certidao: t('documents.categories.certidao'),
+    outros: t('documents.categories.outros')
   }
 
   useEffect(() => {
@@ -45,7 +47,7 @@ const Documentos: React.FC = () => {
       setDocuments(data)
     } catch (error) {
       console.error('Failed to load documents:', error)
-      setError('Erro ao carregar documentos')
+      setError(t('documents.error_loading'))
       setDocuments([])
     } finally {
       setLoading(false)
@@ -121,11 +123,10 @@ const Documentos: React.FC = () => {
       <section className="hero-fullscreen hero-documents">
         <div className="hero-content animate-fade-in">
           <h1 className="hero-title gradient-text animate-slide-up mb-8 text-balance">
-            Documentos Institucionais
+            {t('documents.hero_title')}
           </h1>
           <p className="body-large max-w-4xl mx-auto text-balance">
-            Acesse os documentos oficiais, estatutos, atas e relatórios do Instituto Estação.
-            Transparência e conformidade legal em todos os nossos processos.
+            {t('documents.hero_subtitle')}
           </p>
         </div>
       </section>
@@ -136,7 +137,7 @@ const Documentos: React.FC = () => {
           <Card className="p-6 mb-8">
           <div className="flex items-center mb-4">
             <Filter className="w-5 h-5 mr-2 text-primary-600" />
-            <h2 className="text-lg font-semibold text-gray-800">Filtros</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{t('documents.filters_title')}</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -144,13 +145,13 @@ const Documentos: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Search className="w-4 h-4 inline mr-1" />
-                Buscar
+                {t('documents.search')}
               </label>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Digite o título ou descrição..."
+                placeholder={t('documents.search_placeholder')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
@@ -158,14 +159,14 @@ const Documentos: React.FC = () => {
             {/* Category Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Categoria
+                {t('documents.category_label')}
               </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
-                <option value="todos">Todas as Categorias</option>
+                <option value="todos">{t('documents.all_categories')}</option>
                 {Object.entries(categories).map(([key, label]) => (
                   <option key={key} value={key}>{label}</option>
                 ))}
@@ -175,14 +176,14 @@ const Documentos: React.FC = () => {
             {/* Year Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Ano
+                {t('documents.year_label')}
               </label>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
-                <option value="todos">Todos os Anos</option>
+                <option value="todos">{t('documents.all_years')}</option>
                 {getAvailableYears().map(year => (
                   <option key={year} value={year}>{year}</option>
                 ))}
@@ -191,7 +192,7 @@ const Documentos: React.FC = () => {
           </div>
 
           <div className="mt-4 text-sm text-gray-600">
-            Exibindo {filteredDocuments.length} de {documents.length} documento(s)
+            {t('documents.showing_results')} {filteredDocuments.length} {t('documents.of')} {documents.length} {t('documents.documents_count')}
           </div>
         </Card>
 
@@ -199,7 +200,7 @@ const Documentos: React.FC = () => {
         {loading && (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Carregando documentos...</p>
+            <p className="mt-4 text-gray-600">{t('documents.loading')}</p>
           </div>
         )}
 
@@ -216,12 +217,12 @@ const Documentos: React.FC = () => {
           <Card className="p-12 text-center">
             <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              Nenhum documento encontrado
+              {t('documents.no_documents')}
             </h3>
             <p className="text-gray-600">
               {searchTerm || selectedCategory !== 'todos' || selectedYear !== 'todos'
-                ? 'Tente ajustar os filtros de busca'
-                : 'Ainda não há documentos cadastrados'}
+                ? t('documents.adjust_filters')
+                : t('documents.no_documents_yet')}
             </p>
           </Card>
         )}
@@ -258,7 +259,7 @@ const Documentos: React.FC = () => {
                   {doc.year && (
                     <div className="flex items-center">
                       <FolderOpen className="w-4 h-4 mr-2 text-gray-400" />
-                      Ano de referência: {doc.year}
+                      {t('documents.reference_year')} {doc.year}
                     </div>
                   )}
                   <div className="text-xs text-gray-500">
@@ -273,7 +274,7 @@ const Documentos: React.FC = () => {
                   className="flex items-center justify-center w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors duration-200"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Baixar Documento
+                  {t('documents.download')}
                 </a>
               </Card>
             ))}
@@ -289,15 +290,13 @@ const Documentos: React.FC = () => {
             <FileCheck className="w-16 h-16 text-primary-600 mx-auto mb-4" />
           </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-primary-600 via-primary-700 to-accent-600 bg-clip-text text-transparent">
-            Sobre os Documentos Institucionais
+            {t('documents.info_section.title')}
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed mb-8">
-            Todos os documentos disponibilizados nesta seção são de caráter público e
-            refletem nosso compromisso com a transparência e a boa governança.
+            {t('documents.info_section.text1')}
           </p>
           <p className="text-lg text-gray-600 leading-relaxed">
-            Caso precise de algum documento específico que não esteja disponível aqui,
-            entre em contato conosco através da página de Contato.
+            {t('documents.info_section.text2')}
           </p>
         </div>
       </section>

@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Loading } from '../components/ui/Loading'
 import { financialService } from '../lib/supabaseClient'
 import { type FinancialDocument } from '../lib/types'
-import { 
-  FileText, 
-  Download, 
-  Eye, 
-  Upload, 
-  Calendar, 
+import {
+  FileText,
+  Download,
+  Eye,
+  Upload,
+  Calendar,
   DollarSign,
   Shield,
   Award,
@@ -22,6 +23,7 @@ import {
 
 const Transparencia: React.FC = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [documents, setDocuments] = useState<FinancialDocument[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
@@ -32,11 +34,11 @@ const Transparencia: React.FC = () => {
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
   const documentTypes = [
-    { value: 'all', label: 'Todos' },
-    { value: 'receipt', label: 'Comprovantes' },
-    { value: 'report', label: 'Relatórios' },
-    { value: 'statement', label: 'Demonstrativos' },
-    { value: 'other', label: 'Outros' }
+    { value: 'all', label: t('transparency.document_types.all') },
+    { value: 'receipt', label: t('transparency.document_types.receipt') },
+    { value: 'report', label: t('transparency.document_types.report') },
+    { value: 'statement', label: t('transparency.document_types.statement') },
+    { value: 'other', label: t('transparency.document_types.other') }
   ]
 
   useEffect(() => {
@@ -128,33 +130,33 @@ const Transparencia: React.FC = () => {
   )
 
   const financialStats = [
-    { 
-      icon: <DollarSign className="w-8 h-8" />, 
-      title: "Receitas 2023", 
-      value: "R$ 485.670", 
+    {
+      icon: <DollarSign className="w-8 h-8" />,
+      title: t('transparency.financial_stats.revenue_title'),
+      value: "R$ 485.670",
       change: "+12%",
-      color: "bg-green-100 text-green-600" 
+      color: "bg-green-100 text-green-600"
     },
-    { 
-      icon: <TrendingUp className="w-8 h-8" />, 
-      title: "Projetos Ativos", 
-      value: "18", 
+    {
+      icon: <TrendingUp className="w-8 h-8" />,
+      title: t('transparency.financial_stats.projects_title'),
+      value: "18",
       change: "+3",
-      color: "bg-blue-100 text-blue-600" 
+      color: "bg-blue-100 text-blue-600"
     },
-    { 
-      icon: <PieChart className="w-8 h-8" />, 
-      title: "Eficiência", 
-      value: "94%", 
+    {
+      icon: <PieChart className="w-8 h-8" />,
+      title: t('transparency.financial_stats.efficiency_title'),
+      value: "94%",
       change: "+2%",
-      color: "bg-purple-100 text-purple-600" 
+      color: "bg-purple-100 text-purple-600"
     },
-    { 
-      icon: <BarChart3 className="w-8 h-8" />, 
-      title: "Beneficiários", 
-      value: "5.247", 
+    {
+      icon: <BarChart3 className="w-8 h-8" />,
+      title: t('transparency.financial_stats.beneficiaries_title'),
+      value: "5.247",
       change: "+847",
-      color: "bg-orange-100 text-orange-600" 
+      color: "bg-orange-100 text-orange-600"
     }
   ]
 
@@ -164,11 +166,10 @@ const Transparencia: React.FC = () => {
       <section className="hero-fullscreen hero-transparency">
         <div className="hero-content animate-fade-in">
           <h1 className="hero-title gradient-text animate-slide-up mb-8 text-balance">
-            Transparência
+            {t('transparency.hero_title')}
           </h1>
           <p className="body-large max-w-4xl mx-auto text-balance">
-            Acesso completo aos nossos documentos financeiros e relatórios. 
-            Transparência é um dos nossos principais valores.
+            {t('transparency.hero_subtitle')}
           </p>
         </div>
       </section>
@@ -184,7 +185,7 @@ const Transparencia: React.FC = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">{stat.title}</h3>
                 <div className="text-3xl font-bold text-primary-800 mb-1">{stat.value}</div>
-                <p className="text-sm text-green-600 font-medium">{stat.change} vs 2022</p>
+                <p className="text-sm text-green-600 font-medium">{stat.change} {t('transparency.financial_stats.vs_previous_year')}</p>
               </Card>
             ))}
           </div>
@@ -196,10 +197,10 @@ const Transparencia: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4 gradient-text">
-              Certificações e Reconhecimentos
+              {t('transparency.certifications')}
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Nosso compromisso com a transparência é reconhecido por órgãos competentes
+              {t('transparency.certifications_subtitle')}
             </p>
           </div>
 
@@ -208,10 +209,10 @@ const Transparencia: React.FC = () => {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">CNPJ Ativo</h3>
-              <p className="text-gray-600 mb-4">Registro ativo junto à Receita Federal</p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('transparency.certifications_cards.cnpj.title')}</h3>
+              <p className="text-gray-600 mb-4">{t('transparency.certifications_cards.cnpj.description')}</p>
               <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                Validado
+                {t('transparency.certifications_cards.cnpj.status')}
               </span>
             </Card>
 
@@ -219,10 +220,10 @@ const Transparencia: React.FC = () => {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="w-8 h-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Utilidade Pública</h3>
-              <p className="text-gray-600 mb-4">Título de Utilidade Pública Estadual</p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('transparency.certifications_cards.public_utility.title')}</h3>
+              <p className="text-gray-600 mb-4">{t('transparency.certifications_cards.public_utility.description')}</p>
               <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                Ativo
+                {t('transparency.certifications_cards.public_utility.status')}
               </span>
             </Card>
 
@@ -230,10 +231,10 @@ const Transparencia: React.FC = () => {
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FileText className="w-8 h-8 text-purple-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Auditoria Externa</h3>
-              <p className="text-gray-600 mb-4">Auditoria independente anual</p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('transparency.certifications_cards.audit.title')}</h3>
+              <p className="text-gray-600 mb-4">{t('transparency.certifications_cards.audit.description')}</p>
               <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                2023
+                {t('transparency.certifications_cards.audit.status')}
               </span>
             </Card>
           </div>
@@ -246,10 +247,10 @@ const Transparencia: React.FC = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
             <div>
               <h2 className="text-4xl font-bold mb-4 gradient-text">
-                Documentos Financeiros
+                {t('transparency.financial_docs')}
               </h2>
               <p className="text-xl text-gray-600">
-                Acesse nossos relatórios e comprovantes organizados por ano
+                {t('transparency.financial_docs_subtitle')}
               </p>
             </div>
 
@@ -260,10 +261,11 @@ const Transparencia: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <div className="flex gap-2">
               <Filter className="w-5 h-5 text-gray-500 mt-1" />
-              <span className="text-sm text-gray-600 mt-0.5">Filtros:</span>
+              <span className="text-sm text-gray-600 mt-0.5">{t('transparency.filters_label')}</span>
             </div>
-            
+
             <div className="flex flex-wrap gap-2">
+              <label className="text-sm text-gray-600 mt-1">{t('transparency.year_label')}</label>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
@@ -274,6 +276,7 @@ const Transparencia: React.FC = () => {
                 ))}
               </select>
 
+              <label className="text-sm text-gray-600 mt-1">{t('transparency.type_label')}</label>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
@@ -289,7 +292,7 @@ const Transparencia: React.FC = () => {
           {/* Documents Grid */}
           {loading ? (
             <div className="flex justify-center py-12">
-              <Loading size="lg" text="Carregando documentos..." />
+              <Loading size="lg" text={t('transparency.loading')} />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -327,23 +330,23 @@ const Transparencia: React.FC = () => {
                     </div>
                     
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="flex-1"
                         onClick={() => handleViewDocument(document)}
                       >
                         <Eye className="w-4 h-4 mr-1" />
-                        Visualizar
+                        {t('transparency.view')}
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         className="flex-1"
                         onClick={() => handleDownloadDocument(document)}
                       >
                         <Download className="w-4 h-4 mr-1" />
-                        Download
+                        {t('transparency.download')}
                       </Button>
                     </div>
                   </CardContent>
@@ -358,10 +361,10 @@ const Transparencia: React.FC = () => {
                 <FileText className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                Nenhum documento encontrado
+                {t('transparency.no_documents')}
               </h3>
               <p className="text-gray-600">
-                Não há documentos para os filtros selecionados.
+                {t('transparency.no_documents_subtitle')}
               </p>
             </div>
           )}
@@ -372,35 +375,28 @@ const Transparencia: React.FC = () => {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6 gradient-text">
-            Nosso Compromisso com a Transparência
+            {t('transparency.commitment_title')}
           </h2>
           <p className="text-lg text-gray-700 leading-relaxed mb-8">
-            Acreditamos que a transparência é fundamental para construir confiança 
-            com nossos doadores, beneficiários e a sociedade. Por isso, disponibilizamos 
-            todos os nossos documentos financeiros e relatórios de atividades de forma 
-            clara e acessível.
+            {t('transparency.commitment_text')}
           </p>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
             <Card variant="glass" className="p-6 text-left">
               <h3 className="text-xl font-semibold mb-3 text-primary-800">
-                Prestação de Contas
+                {t('transparency.commitment_cards.accountability.title')}
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Publicamos mensalmente nossos relatórios financeiros e 
-                demonstrativos de aplicação de recursos, garantindo total 
-                visibilidade sobre o destino das doações.
+                {t('transparency.commitment_cards.accountability.description')}
               </p>
             </Card>
-            
+
             <Card variant="glass" className="p-6 text-left">
               <h3 className="text-xl font-semibold mb-3 text-primary-800">
-                Auditoria Independente
+                {t('transparency.commitment_cards.audit.title')}
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                Anualmente, passamos por auditoria externa realizada por 
-                empresa especializada, assegurando a veracidade e precisão 
-                de nossas informações financeiras.
+                {t('transparency.commitment_cards.audit.description')}
               </p>
             </Card>
           </div>
@@ -411,20 +407,19 @@ const Transparencia: React.FC = () => {
       <section className="py-20 px-4 bg-gradient-to-r from-primary-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center text-white">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Transparência que Gera Confiança
+            {t('transparency.cta_title')}
           </h2>
           <p className="text-lg mb-8 opacity-90">
-            Nossa transparência é reflexo do nosso compromisso com você. 
-            Saiba exatamente como sua doação está transformando vidas.
+            {t('transparency.cta_subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="glass" className="text-primary-800 font-semibold" onClick={() => navigate('/doacoes')}>
               <DollarSign className="w-5 h-5 mr-2" />
-              Fazer Doação
+              {t('transparency.contact_button')}
             </Button>
             <Button size="lg" variant="outline" className="border-white text-primary-800 font-semibold bg-white/90 hover:bg-white hover:text-primary-600" onClick={() => window.open('/relatorio-anual-2023.pdf', '_blank')}>
               <FileText className="w-5 h-5 mr-2" />
-              Relatório Anual
+              {t('transparency.annual_report_button')}
             </Button>
           </div>
         </div>

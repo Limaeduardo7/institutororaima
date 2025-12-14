@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Users, Calendar, FileText, MessageCircle, CreditCard, Settings, FolderOpen } from 'lucide-react';
 
 export default function Admin() {
+  const { t } = useTranslation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const location = useLocation();
@@ -12,7 +14,7 @@ export default function Admin() {
     if (password === 'admin123') {
       setIsAuthenticated(true);
     } else {
-      alert('Senha incorreta');
+      alert(t('admin.incorrect_password'));
     }
   };
 
@@ -20,11 +22,11 @@ export default function Admin() {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-          <h1 className="text-2xl font-bold mb-6 text-center">Admin - Instituto Estação</h1>
+          <h1 className="text-2xl font-bold mb-6 text-center">{t('admin.title')}</h1>
           <form onSubmit={handleLogin}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Senha de Administrador
+                {t('admin.password_label')}
               </label>
               <input
                 type="password"
@@ -38,7 +40,7 @@ export default function Admin() {
               type="submit"
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
             >
-              Entrar
+              {t('admin.login')}
             </button>
           </form>
         </div>
@@ -47,13 +49,13 @@ export default function Admin() {
   }
 
   const navigation = [
-    { name: 'Ações Sociais', href: '/admin/social-actions', icon: Users },
-    { name: 'Eventos', href: '/admin/events', icon: Calendar },
-    { name: 'Documentos Financeiros', href: '/admin/financial-documents', icon: FileText },
-    { name: 'Documentos Institucionais', href: '/admin/documents', icon: FolderOpen },
-    { name: 'Mensagens de Contato', href: '/admin/contact-messages', icon: MessageCircle },
-    { name: 'Doações', href: '/admin/donations', icon: CreditCard },
-    { name: 'Configurações', href: '/admin/settings', icon: Settings },
+    { name: t('admin.nav.social_actions'), href: '/admin/social-actions', icon: Users },
+    { name: t('admin.nav.events'), href: '/admin/events', icon: Calendar },
+    { name: t('admin.nav.financial_documents'), href: '/admin/financial-documents', icon: FileText },
+    { name: t('admin.nav.documents'), href: '/admin/documents', icon: FolderOpen },
+    { name: t('admin.nav.contact_messages'), href: '/admin/contact-messages', icon: MessageCircle },
+    { name: t('admin.nav.donations'), href: '/admin/donations', icon: CreditCard },
+    { name: t('admin.nav.settings'), href: '/admin/settings', icon: Settings },
   ];
 
   if (location.pathname === '/admin') {
@@ -65,7 +67,7 @@ export default function Admin() {
       <div className="flex">
         <div className="w-64 bg-white shadow-md">
           <div className="p-6">
-            <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
+            <h1 className="text-xl font-bold text-gray-800">{t('admin.panel')}</h1>
           </div>
           <nav className="mt-6">
             {navigation.map((item) => {
@@ -92,7 +94,7 @@ export default function Admin() {
               onClick={() => setIsAuthenticated(false)}
               className="w-full text-left text-sm text-gray-600 hover:text-gray-900"
             >
-              Sair
+              {t('admin.logout')}
             </button>
           </div>
         </div>

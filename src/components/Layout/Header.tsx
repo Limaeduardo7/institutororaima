@@ -1,23 +1,26 @@
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from '../LanguageSelector';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
   const menuItems = [
-    { to: "/", label: "Início" },
-    { to: "/quem-somos", label: "Quem Somos" },
-    { to: "/eventos", label: "Eventos" },
-    { to: "/doacoes", label: "Doações" },
-    { to: "/transparencia", label: "Transparência" },
-    { to: "/documentos", label: "Documentos" },
-    { to: "/contato", label: "Contato" },
-    { to: "/localizacao", label: "Localização" }
+    { to: "/", label: t('header.home') },
+    { to: "/quem-somos", label: t('header.about') },
+    { to: "/eventos", label: t('header.events') },
+    { to: "/doacoes", label: t('header.donations') },
+    { to: "/transparencia", label: t('header.transparency') },
+    { to: "/documentos", label: t('header.documents') },
+    { to: "/contato", label: t('header.contact') },
+    { to: "/localizacao", label: t('header.location') }
   ];
 
   return (
@@ -53,20 +56,24 @@ export default function Header() {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
               </Link>
             ))}
+            <LanguageSelector />
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={toggleMenu}
-            className="lg:hidden p-2 rounded-lg hover:bg-primary-50 transition-colors"
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? (
-              <X className="h-6 w-6 text-primary-700" />
-            ) : (
-              <Menu className="h-6 w-6 text-primary-700" />
-            )}
-          </button>
+          {/* Mobile Language Selector and Menu Button */}
+          <div className="lg:hidden flex items-center gap-2">
+            <LanguageSelector />
+            <button
+              onClick={toggleMenu}
+              className="p-2 rounded-lg hover:bg-primary-50 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6 text-primary-700" />
+              ) : (
+                <Menu className="h-6 w-6 text-primary-700" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}

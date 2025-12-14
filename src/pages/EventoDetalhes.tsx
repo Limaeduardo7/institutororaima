@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Loading } from '../components/ui/Loading'
 import { eventService } from '../lib/supabaseClient'
 import { type Event } from '../lib/types'
-import { 
-  Calendar, 
-  MapPin, 
-  Users, 
-  Clock, 
-  ArrowLeft, 
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Clock,
+  ArrowLeft,
   Share2,
   Heart,
   Phone,
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react'
 
 const EventoDetalhes: React.FC = () => {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [event, setEvent] = useState<Event | null>(null)
@@ -113,14 +115,14 @@ const EventoDetalhes: React.FC = () => {
     } else {
       // Fallback to copy URL
       navigator.clipboard.writeText(window.location.href)
-      alert('Link copiado para a área de transferência!')
+      alert(t('event_details.link_copied'))
     }
   }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loading size="lg" text="Carregando evento..." />
+        <Loading size="lg" text={t('event_details.loading')} />
       </div>
     )
   }
@@ -130,14 +132,14 @@ const EventoDetalhes: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card variant="glass" className="max-w-md w-full text-center p-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Evento não encontrado
+            {t('event_details.not_found')}
           </h2>
           <p className="text-gray-600 mb-6">
-            O evento que você está procurando não existe ou foi removido.
+            {t('event_details.not_found_message')}
           </p>
           <Button onClick={() => navigate('/eventos')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar aos Eventos
+            {t('event_details.back_to_events')}
           </Button>
         </Card>
       </div>
@@ -149,13 +151,13 @@ const EventoDetalhes: React.FC = () => {
       {/* Header */}
       <section className="py-12 px-4 bg-gradient-to-br from-primary-50 to-purple-50">
         <div className="max-w-4xl mx-auto">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => navigate('/eventos')}
             className="mb-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar aos Eventos
+            {t('event_details.back_to_events')}
           </Button>
           
           <div className="flex flex-col lg:flex-row gap-8">
@@ -187,43 +189,43 @@ const EventoDetalhes: React.FC = () => {
                     <Calendar className="w-10 h-10 text-primary-600" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    Participe deste Evento
+                    {t('event_details.participate')}
                   </h3>
                   <p className="text-gray-600 text-sm">
-                    Sua presença faz a diferença
+                    {t('event_details.your_presence')}
                   </p>
                 </div>
-                
+
                 {registered ? (
                   <div className="text-center">
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <CheckCircle className="w-8 h-8 text-green-600" />
                     </div>
                     <p className="text-green-600 font-semibold mb-4">
-                      Inscrição Confirmada!
+                      {t('event_details.registration_confirmed')}
                     </p>
                     <p className="text-sm text-gray-600">
-                      Você receberá mais detalhes por e-mail
+                      {t('event_details.confirmation_email')}
                     </p>
                   </div>
                 ) : (
-                  <Button 
+                  <Button
                     onClick={handleRegistration}
                     className="w-full mb-4"
                     loading={registering}
                   >
                     <Heart className="w-4 h-4 mr-2" />
-                    {registering ? 'Confirmando...' : 'Confirmar Presença'}
+                    {registering ? t('event_details.confirming') : t('event_details.confirm_presence')}
                   </Button>
                 )}
-                
-                <Button 
-                  variant="outline" 
+
+                <Button
+                  variant="outline"
                   onClick={shareEvent}
                   className="w-full"
                 >
                   <Share2 className="w-4 h-4 mr-2" />
-                  Compartilhar Evento
+                  {t('event_details.share_event')}
                 </Button>
               </Card>
             </div>
@@ -240,8 +242,8 @@ const EventoDetalhes: React.FC = () => {
                 <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Users className="w-12 h-12" />
                 </div>
-                <p className="text-lg font-medium">Imagem do Evento</p>
-                <p className="text-sm opacity-80 mt-2">Em breve com galeria de fotos</p>
+                <p className="text-lg font-medium">{t('event_details.event_image')}</p>
+                <p className="text-sm opacity-80 mt-2">{t('event_details.photo_gallery_soon')}</p>
               </div>
             </div>
           </Card>
@@ -256,41 +258,38 @@ const EventoDetalhes: React.FC = () => {
             <div className="lg:col-span-2">
               <Card variant="glass" className="p-8 mb-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                  Sobre o Evento
+                  {t('event_details.about_event')}
                 </h2>
                 <div className="prose prose-lg text-gray-700 leading-relaxed">
                   <p>{event.description}</p>
-                  
+
                   <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">
-                    O que esperar?
+                    {t('event_details.what_to_expect')}
                   </h3>
                   <ul className="space-y-2">
                     <li className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      Atividades organizadas e estruturadas
+                      {t('event_details.organized_activities')}
                     </li>
                     <li className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      Equipe de voluntários experientes
+                      {t('event_details.experienced_volunteers')}
                     </li>
                     <li className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      Ambiente acolhedor e inclusivo
+                      {t('event_details.welcoming_environment')}
                     </li>
                     <li className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      Oportunidade de fazer a diferença
+                      {t('event_details.make_difference')}
                     </li>
                   </ul>
 
                   <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">
-                    Como participar?
+                    {t('event_details.how_to_participate')}
                   </h3>
                   <p>
-                    Para participar deste evento, basta confirmar sua presença clicando no botão 
-                    ao lado. Não é necessário inscrição prévia, mas sua confirmação nos ajuda 
-                    a organizar melhor o evento e garantir que tenhamos estrutura adequada 
-                    para todos os participantes.
+                    {t('event_details.participation_text')}
                   </p>
                 </div>
               </Card>
@@ -298,31 +297,31 @@ const EventoDetalhes: React.FC = () => {
               {/* Requirements */}
               <Card variant="glass" className="p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                  Informações Importantes
+                  {t('event_details.important_info')}
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
                     <p className="text-gray-700">
-                      <strong>Entrada:</strong> Gratuita para todos os participantes
+                      <strong>{t('event_details.entry')}:</strong> {t('event_details.free_entry')}
                     </p>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
                     <p className="text-gray-700">
-                      <strong>Idade:</strong> Evento aberto para todas as idades
+                      <strong>{t('event_details.age')}:</strong> {t('event_details.all_ages')}
                     </p>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
                     <p className="text-gray-700">
-                      <strong>Estacionamento:</strong> Disponível na rua próximo ao local
+                      <strong>{t('event_details.parking')}:</strong> {t('event_details.parking_info')}
                     </p>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 flex-shrink-0"></div>
                     <p className="text-gray-700">
-                      <strong>Acessibilidade:</strong> Local adaptado para pessoas com mobilidade reduzida
+                      <strong>{t('event_details.accessibility')}:</strong> {t('event_details.accessibility_info')}
                     </p>
                   </div>
                 </div>
@@ -334,7 +333,7 @@ const EventoDetalhes: React.FC = () => {
               {/* Contact Info */}
               <Card variant="glass" className="p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                  Dúvidas sobre o Evento?
+                  {t('event_details.event_questions')}
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
@@ -343,7 +342,7 @@ const EventoDetalhes: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-800">(95) 3224-5678</p>
-                      <p className="text-sm text-gray-600">Horário comercial</p>
+                      <p className="text-sm text-gray-600">{t('event_details.business_hours')}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -352,7 +351,7 @@ const EventoDetalhes: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-800">contato@institutoestacao.org</p>
-                      <p className="text-sm text-gray-600">Resposta em 24h</p>
+                      <p className="text-sm text-gray-600">{t('event_details.response_time')}</p>
                     </div>
                   </div>
                 </div>
@@ -361,44 +360,44 @@ const EventoDetalhes: React.FC = () => {
               {/* Location Map */}
               <Card variant="glass" className="p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                  Localização
+                  {t('event_details.location')}
                 </h3>
                 <div className="aspect-video bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
                   <div className="text-center text-gray-500">
                     <MapPin className="w-12 h-12 mx-auto mb-2" />
-                    <p className="text-sm">Mapa do Local</p>
+                    <p className="text-sm">{t('event_details.map_location')}</p>
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mb-4">
                   {event.location}
                 </p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="w-full"
                   onClick={() => navigate('/localizacao')}
                 >
                   <MapPin className="w-4 h-4 mr-2" />
-                  Como Chegar
+                  {t('event_details.how_to_get_there')}
                 </Button>
               </Card>
 
               {/* Other Events */}
               <Card variant="glass" className="p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                  Outros Eventos
+                  {t('event_details.other_events')}
                 </h3>
                 <p className="text-gray-600 text-sm mb-4">
-                  Confira outros eventos e ações que temos planejados
+                  {t('event_details.other_events_text')}
                 </p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="w-full"
                   onClick={() => navigate('/eventos')}
                 >
                   <Calendar className="w-4 h-4 mr-2" />
-                  Ver Todos os Eventos
+                  {t('event_details.view_all_events')}
                 </Button>
               </Card>
             </div>

@@ -1,11 +1,13 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { MapPin, Navigation, Clock, Phone, Car, Bus, ExternalLink } from 'lucide-react'
 
 const Localizacao: React.FC = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const openGoogleMaps = () => {
     const address = "Rua Rio Negro, Bela Vista, Boa Vista - RR"
     const encodedAddress = encodeURIComponent(address)
@@ -24,11 +26,10 @@ const Localizacao: React.FC = () => {
       <section className="hero-fullscreen hero-contact">
         <div className="hero-content animate-fade-in">
           <h1 className="hero-title gradient-text animate-slide-up mb-8 text-balance">
-            Nossa Localização
+            {t('location.hero_title')}
           </h1>
           <p className="body-large max-w-4xl mx-auto text-balance">
-            Venha nos visitar no coração de Boa Vista, Roraima. 
-            Estamos prontos para recebê-lo e mostrar nosso trabalho.
+            {t('location.hero_subtitle')}
           </p>
         </div>
       </section>
@@ -41,7 +42,7 @@ const Localizacao: React.FC = () => {
             <div className="space-y-8">
               <div>
                 <h2 className="text-3xl font-bold mb-6 gradient-text">
-                  Endereço Completo
+                  {t('location.full_address_title')}
                 </h2>
                 <Card variant="glass" className="p-8 hover:scale-105 transition-transform duration-300">
                   <div className="flex items-start space-x-4 mb-6">
@@ -50,12 +51,12 @@ const Localizacao: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                        Instituto Estação
+                        {t('location.instituto_name')}
                       </h3>
                       <div className="text-lg text-gray-600 leading-relaxed">
                         <p className="font-medium">Rua Rio Negro, Bela Vista</p>
                         <p>Boa Vista - Roraima</p>
-                        <p className="text-sm text-gray-500 mt-2">Escritório administrativo:</p>
+                        <p className="text-sm text-gray-500 mt-2">{t('location.office_label')}</p>
                         <p className="font-medium">Rua Aracaju, 725, Novo Horizonte</p>
                         <p>Rorainópolis - Roraima</p>
                       </div>
@@ -65,11 +66,11 @@ const Localizacao: React.FC = () => {
                   <div className="flex flex-col sm:flex-row gap-3 mt-6">
                     <Button onClick={openGoogleMaps} className="flex-1">
                       <Navigation className="w-4 h-4 mr-2" />
-                      Abrir no Google Maps
+                      {t('location.open_google_maps')}
                     </Button>
                     <Button onClick={openWaze} variant="outline" className="flex-1">
                       <ExternalLink className="w-4 h-4 mr-2" />
-                      Abrir no Waze
+                      {t('location.open_waze')}
                     </Button>
                   </div>
                 </Card>
@@ -80,29 +81,28 @@ const Localizacao: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center text-primary-800">
                     <Clock className="w-6 h-6 mr-2" />
-                    Horário de Funcionamento
+                    {t('location.opening_hours')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
-                      <span className="font-medium text-gray-700">Segunda a Sexta</span>
-                      <span className="text-primary-600 font-semibold">7h30 às 17h30</span>
+                      <span className="font-medium text-gray-700">{t('location.monday_friday')}</span>
+                      <span className="text-primary-600 font-semibold">{t('location.monday_friday_hours')}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
-                      <span className="font-medium text-gray-700">Sábados</span>
-                      <span className="text-primary-600 font-semibold">8h às 12h</span>
+                      <span className="font-medium text-gray-700">{t('location.saturday')}</span>
+                      <span className="text-primary-600 font-semibold">{t('location.saturday_hours')}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
-                      <span className="font-medium text-gray-700">Domingos</span>
-                      <span className="text-gray-500">Fechado</span>
+                      <span className="font-medium text-gray-700">{t('location.sunday')}</span>
+                      <span className="text-gray-500">{t('location.sunday_closed')}</span>
                     </div>
                   </div>
                   
                   <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                     <p className="text-sm text-blue-800">
-                      <strong>Visitação:</strong> Recomendamos agendar sua visita antecipadamente 
-                      para garantir que possamos recebê-lo adequadamente.
+                      <strong>{t('location.visit_notice_title')}</strong> {t('location.visit_notice_text')}
                     </p>
                   </div>
                 </CardContent>
@@ -113,26 +113,26 @@ const Localizacao: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center text-primary-800">
                     <Phone className="w-6 h-6 mr-2" />
-                    Contato Rápido
+                    {t('location.quick_contact')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">Telefone Principal</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('location.main_phone')}</p>
                       <p className="text-lg font-semibold text-gray-800">+55 (41) 98747-9813</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">WhatsApp</p>
+                      <p className="text-sm text-gray-600 mb-1">{t('location.whatsapp_label')}</p>
                       <p className="text-lg font-semibold text-gray-800">+55 (41) 98747-9813</p>
                     </div>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full mt-4"
                       onClick={() => window.open('https://wa.me/5541987479813', '_blank')}
                     >
                       <Phone className="w-4 h-4 mr-2" />
-                      Chamar no WhatsApp
+                      {t('location.call_whatsapp')}
                     </Button>
                   </div>
                 </CardContent>
@@ -143,7 +143,7 @@ const Localizacao: React.FC = () => {
             <div className="space-y-6">
               <div>
                 <h2 className="text-3xl font-bold mb-6 gradient-text">
-                  Mapa Interativo
+                  {t('location.interactive_map')}
                 </h2>
               </div>
               
@@ -157,7 +157,7 @@ const Localizacao: React.FC = () => {
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    title="Localização do Instituto Estação"
+                    title={t('location.map_title')}
                     className="rounded-lg"
                   />
                 </div>
@@ -166,18 +166,14 @@ const Localizacao: React.FC = () => {
               {/* Location Description */}
               <Card variant="glass" className="p-6">
                 <h3 className="text-xl font-semibold mb-4 text-primary-800">
-                  Sobre a Localização
+                  {t('location.about_location_title')}
                 </h3>
                 <div className="space-y-4 text-gray-600">
                   <p>
-                    Nossa sede está estrategicamente localizada no bairro Bela Vista, 
-                    uma das regiões de Boa Vista, facilitando o acesso tanto para 
-                    beneficiários quanto para visitantes.
+                    {t('location.about_location_text1')}
                   </p>
                   <p>
-                    A região é bem servida por transporte público e possui fácil acesso 
-                    através das principais vias da cidade. Nosso escritório administrativo 
-                    em Rorainópolis também atende a população local.
+                    {t('location.about_location_text2')}
                   </p>
                 </div>
               </Card>
@@ -191,10 +187,10 @@ const Localizacao: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4 gradient-text">
-              Como Chegar
+              {t('location.directions')}
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Diversas opções de transporte para facilitar sua visita
+              {t('location.transport_subtitle')}
             </p>
           </div>
 
@@ -203,10 +199,9 @@ const Localizacao: React.FC = () => {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Car className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-800">De Carro</h3>
+              <h3 className="text-xl font-semibold mb-3 text-gray-800">{t('location.by_car_title')}</h3>
               <p className="text-gray-600 leading-relaxed">
-                Estacionamento disponível na rua. Acesso pela Av. Major Williams 
-                e demais vias do bairro Jardim Bela Vista.
+                {t('location.by_car_text')}
               </p>
             </Card>
 
@@ -214,10 +209,9 @@ const Localizacao: React.FC = () => {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Bus className="w-8 h-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-800">Transporte Público</h3>
+              <h3 className="text-xl font-semibold mb-3 text-gray-800">{t('location.public_transport_title')}</h3>
               <p className="text-gray-600 leading-relaxed">
-                Diversas linhas de ônibus atendem a região. 
-                Pontos próximos na Av. Major Williams e adjacências.
+                {t('location.public_transport_text')}
               </p>
             </Card>
 
@@ -225,10 +219,9 @@ const Localizacao: React.FC = () => {
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Navigation className="w-8 h-8 text-purple-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-800">Aplicativos</h3>
+              <h3 className="text-xl font-semibold mb-3 text-gray-800">{t('location.apps_title')}</h3>
               <p className="text-gray-600 leading-relaxed">
-                Uber, 99 e outros aplicativos de transporte atendem normalmente 
-                a região com boa cobertura.
+                {t('location.apps_text')}
               </p>
             </Card>
           </div>
@@ -239,25 +232,24 @@ const Localizacao: React.FC = () => {
       <section className="py-20 px-4 bg-gradient-to-r from-primary-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center text-white">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Agende Sua Visita
+            {t('location.cta.title')}
           </h2>
           <p className="text-lg mb-8 opacity-90">
-            Conheça de perto nosso trabalho e descubra como você pode 
-            fazer parte desta transformação social em Roraima.
+            {t('location.cta.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" variant="glass" className="text-primary-800 font-semibold" onClick={() => navigate('/contato')}>
               <Phone className="w-5 h-5 mr-2" />
-              Agendar Visita
+              {t('location.cta.schedule_button')}
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               className="border-white text-primary-800 font-semibold bg-white/90 hover:bg-white hover:text-primary-600"
               onClick={openGoogleMaps}
             >
               <MapPin className="w-5 h-5 mr-2" />
-              Ver Direções
+              {t('location.cta.directions_button')}
             </Button>
           </div>
         </div>
