@@ -250,11 +250,11 @@ const QuemSomos: React.FC = () => {
                 className="group hover:scale-105 transition-all duration-300 text-center"
               >
                 <CardHeader className="pb-4">
-                  <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4 shadow-lg group-hover:shadow-xl transition-shadow">
+                  <div className="w-full aspect-square overflow-hidden mx-auto mb-4 shadow-lg group-hover:shadow-xl transition-shadow rounded-lg">
                     <img 
                       src={founder.image} 
                       alt={founder.name}
-                      className={`w-full h-full object-cover ${founder.name === 'Jarlisson Parente' ? 'object-top' : ''}`}
+                      className={`w-full h-full object-cover ${founder.name.includes('Naila') ? 'object-top' : 'object-center'}`}
                     />
                   </div>
                   <CardTitle className="text-primary-800 text-xl">

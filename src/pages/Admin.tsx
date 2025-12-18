@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Users, Calendar, FileText, MessageCircle, CreditCard, Settings, FolderOpen } from 'lucide-react';
+import { Users, Calendar, FileText, MessageCircle, CreditCard, Settings, FolderOpen, Image } from 'lucide-react';
 
 export default function Admin() {
   const { t } = useTranslation();
@@ -53,6 +53,7 @@ export default function Admin() {
     { name: t('admin.nav.events'), href: '/admin/events', icon: Calendar },
     { name: t('admin.nav.financial_documents'), href: '/admin/financial-documents', icon: FileText },
     { name: t('admin.nav.documents'), href: '/admin/documents', icon: FolderOpen },
+    { name: 'Galeria', href: '/admin/gallery', icon: Image },
     { name: t('admin.nav.contact_messages'), href: '/admin/contact-messages', icon: MessageCircle },
     { name: t('admin.nav.donations'), href: '/admin/donations', icon: CreditCard },
     { name: t('admin.nav.settings'), href: '/admin/settings', icon: Settings },

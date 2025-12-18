@@ -6,6 +6,7 @@ import Eventos from './pages/Eventos';
 import Doacoes from './pages/Doacoes';
 import Transparencia from './pages/Transparencia';
 import Documentos from './pages/Documentos';
+import Galeria from './pages/Galeria';
 import Contato from './pages/Contato';
 import Localizacao from './pages/Localizacao';
 import EventoDetalhes from './pages/EventoDetalhes';
@@ -16,6 +17,7 @@ import ContactMessagesAdmin from './pages/admin/ContactMessagesAdmin';
 import DonationsAdmin from './pages/admin/DonationsAdmin';
 import FinancialDocumentsAdmin from './pages/admin/FinancialDocumentsAdmin';
 import AdminDocuments from './pages/admin/AdminDocuments';
+import GalleryAdmin from './pages/admin/GalleryAdmin';
 import SettingsAdmin from './pages/admin/SettingsAdmin';
 
 function App() {
@@ -29,6 +31,7 @@ function App() {
           <Route path="doacoes" element={<Doacoes />} />
           <Route path="transparencia" element={<Transparencia />} />
           <Route path="documentos" element={<Documentos />} />
+          <Route path="galeria" element={<Galeria />} />
           <Route path="contato" element={<Contato />} />
           <Route path="localizacao" element={<Localizacao />} />
           <Route path="evento/:id" element={<EventoDetalhes />} />
@@ -40,6 +43,7 @@ function App() {
           <Route path="donations" element={<DonationsAdmin />} />
           <Route path="financial-documents" element={<FinancialDocumentsAdmin />} />
           <Route path="documents" element={<AdminDocuments />} />
+          <Route path="gallery" element={<GalleryAdmin />} />
           <Route path="settings" element={<SettingsAdmin />} />
         </Route>
       </Routes>

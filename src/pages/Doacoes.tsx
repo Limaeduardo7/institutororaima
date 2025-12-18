@@ -5,7 +5,7 @@ import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { processDonation } from '../lib/mercadoPagoService'
-import { processStripeDonation, STRIPE_CURRENCIES, formatCurrency } from '../lib/stripeService'
+import { processPayPalDonation, PAYPAL_CURRENCIES, formatCurrency } from '../lib/paypalService'
 import {
   Heart,
   CreditCard,
@@ -33,9 +33,9 @@ const Doacoes: React.FC = () => {
   const [searchParams] = useSearchParams()
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [customAmount, setCustomAmount] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'boleto' | 'stripe' | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'boleto' | 'paypal' | null>(null)
   const [isInternational, setIsInternational] = useState(false)
-  const [selectedCurrency, setSelectedCurrency] = useState<keyof typeof STRIPE_CURRENCIES>('usd')
+  const [selectedCurrency, setSelectedCurrency] = useState<keyof typeof PAYPAL_CURRENCIES>('USD')
   const [donorInfo, setDonorInfo] = useState({
     name: '',
     email: '',
@@ -104,9 +104,9 @@ const Doacoes: React.FC = () => {
     setError(null)
 
     try {
-      if (paymentMethod === 'stripe') {
-        // Processar doação internacional via Stripe
-        await processStripeDonation({
+      if (paymentMethod === 'paypal') {
+        // Processar doação internacional via PayPal
+        await processPayPalDonation({
           amount,
           currency: selectedCurrency,
           donor_name: donorInfo.name || undefined,
@@ -341,7 +341,7 @@ const Doacoes: React.FC = () => {
                     variant={isInternational ? 'primary' : 'outline'}
                     onClick={() => {
                       setIsInternational(true)
-                      setPaymentMethod('stripe')
+                      setPaymentMethod('paypal')
                     }}
                     className="flex-1"
                   >
@@ -357,18 +357,18 @@ const Doacoes: React.FC = () => {
                   <h3 className="text-lg font-semibold mb-3 text-gray-800">
                     {t('donations.select_currency')}
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                    {Object.entries(STRIPE_CURRENCIES).map(([code, info]) => (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {Object.entries(PAYPAL_CURRENCIES).map(([code, info]) => (
                       <Card
                         key={code}
                         variant={selectedCurrency === code ? 'elevated' : 'glass'}
                         className={`p-3 cursor-pointer transition-all text-center ${
                           selectedCurrency === code ? 'ring-2 ring-primary-500' : 'hover:scale-105'
                         }`}
-                        onClick={() => setSelectedCurrency(code as keyof typeof STRIPE_CURRENCIES)}
+                        onClick={() => setSelectedCurrency(code as keyof typeof PAYPAL_CURRENCIES)}
                       >
                         <div className="font-bold text-lg">{info.symbol}</div>
-                        <div className="text-xs text-gray-600">{code.toUpperCase()}</div>
+                        <div className="text-xs text-gray-600">{code}</div>
                       </Card>
                     ))}
                   </div>
@@ -383,18 +383,18 @@ const Doacoes: React.FC = () => {
 
                 <div className="space-y-3">
                   {isInternational ? (
-                    // Stripe (International Payment)
+                    // PayPal (International Payment)
                     <Card
                       variant="elevated"
                       className="p-4 ring-2 ring-primary-500"
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                          <CreditCard className="w-5 h-5 text-purple-600" />
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <CreditCard className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-gray-800">{t('donations.stripe_card')}</h4>
-                          <p className="text-sm text-gray-600">{t('donations.stripe_description')}</p>
+                          <h4 className="font-semibold text-gray-800">{t('donations.paypal_card')}</h4>
+                          <p className="text-sm text-gray-600">{t('donations.paypal_description')}</p>
                         </div>
                       </div>
                     </Card>
@@ -510,7 +510,7 @@ const Doacoes: React.FC = () => {
                       {paymentMethod === 'pix' ? t('donations.pix') :
                        paymentMethod === 'card' ? t('donations.card') :
                        paymentMethod === 'boleto' ? t('donations.boleto') :
-                       paymentMethod === 'stripe' ? 'Credit/Debit Card (Stripe)' :
+                       paymentMethod === 'paypal' ? t('donations.paypal_card') :
                        isInternational ? t('donations.method_not_selected_intl') : t('donations.method_not_selected')}
                     </span>
                   </div>
@@ -535,7 +535,7 @@ const Doacoes: React.FC = () => {
                     <Heart className="w-5 h-5 mr-2" />
                     {loading
                       ? t('donations.processing')
-                      : (isInternational ? t('donations.donate_stripe') : t('donations.donate_button'))
+                      : (isInternational ? t('donations.donate_paypal') : t('donations.donate_button'))
                     }
                   </Button>
                 )}
@@ -551,16 +551,16 @@ const Doacoes: React.FC = () => {
                   <>
                     <div
                       className="text-sm text-gray-600 leading-relaxed mb-4"
-                      dangerouslySetInnerHTML={{ __html: t('donations.stripe_info') }}
+                      dangerouslySetInnerHTML={{ __html: t('donations.paypal_info') }}
                     />
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-purple-800 mb-2 text-sm">{t('donations.how_it_works_intl')}</h4>
-                      <ol className="text-sm text-purple-700 space-y-1">
-                        <li>1. {t('donations.stripe_steps.step1')}</li>
-                        <li>2. {t('donations.stripe_steps.step2')}</li>
-                        <li>3. {t('donations.stripe_steps.step3')}</li>
-                        <li>4. {t('donations.stripe_steps.step4')}</li>
-                        <li>5. {t('donations.stripe_steps.step5')}</li>
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-blue-800 mb-2 text-sm">{t('donations.how_it_works_intl')}</h4>
+                      <ol className="text-sm text-blue-700 space-y-1">
+                        <li>1. {t('donations.paypal_steps.step1')}</li>
+                        <li>2. {t('donations.paypal_steps.step2')}</li>
+                        <li>3. {t('donations.paypal_steps.step3')}</li>
+                        <li>4. {t('donations.paypal_steps.step4')}</li>
+                        <li>5. {t('donations.paypal_steps.step5')}</li>
                       </ol>
                     </div>
                   </>

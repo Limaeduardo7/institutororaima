@@ -2,18 +2,67 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Globe, ChevronDown, Check } from 'lucide-react'
 
+// Flag SVG Components
+const FlagBR = () => (
+  <svg className="w-6 h-6 rounded-sm shadow-sm" viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg">
+    <rect width="36" height="24" fill="#009b3a"/>
+    <path d="M18 3L3 12L18 21L33 12Z" fill="#fedf00"/>
+    <circle cx="18" cy="12" r="4" fill="#002776"/>
+  </svg>
+)
+
+const FlagUS = () => (
+  <svg className="w-6 h-6 rounded-sm shadow-sm" viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg">
+    <rect width="36" height="24" fill="#B22234"/>
+    <path d="M0 2.77h36M0 5.54h36M0 8.31h36M0 11.08h36M0 13.85h36M0 16.62h36M0 19.39h36M0 22.16h36" stroke="#fff" strokeWidth="1.85"/>
+    <rect width="14.4" height="12.92" fill="#3C3B6E"/>
+  </svg>
+)
+
+const FlagES = () => (
+  <svg className="w-6 h-6 rounded-sm shadow-sm" viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg">
+    <rect width="36" height="6" fill="#AA151B"/>
+    <rect y="6" width="36" height="12" fill="#F1BF00"/>
+    <rect y="18" width="36" height="6" fill="#AA151B"/>
+  </svg>
+)
+
+const FlagFR = () => (
+  <svg className="w-6 h-6 rounded-sm shadow-sm" viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg">
+    <rect width="12" height="24" fill="#002395"/>
+    <rect x="12" width="12" height="24" fill="#fff"/>
+    <rect x="24" width="12" height="24" fill="#ED2939"/>
+  </svg>
+)
+
+const FlagTR = () => (
+  <svg className="w-6 h-6 rounded-sm shadow-sm" viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg">
+    <rect width="36" height="24" fill="#E30A17"/>
+    <circle cx="14" cy="12" r="5" fill="#fff"/>
+    <circle cx="16" cy="12" r="4" fill="#E30A17"/>
+    <path d="M20 9l1.5 4.5h4.5l-3.5 2.5 1.5 4.5-3.5-2.5-3.5 2.5 1.5-4.5-3.5-2.5h4.5z" fill="#fff" transform="scale(0.4) translate(30, 6)"/>
+  </svg>
+)
+
+const FlagSA = () => (
+  <svg className="w-6 h-6 rounded-sm shadow-sm" viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg">
+    <rect width="36" height="24" fill="#165B33"/>
+    <text x="18" y="16" fontSize="10" fill="#fff" textAnchor="middle" fontFamily="Arial">AR</text>
+  </svg>
+)
+
 const LanguageSelector: React.FC = () => {
   const { i18n } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const languages = [
-    { code: 'pt-BR', name: 'Português', fullName: 'Português (Brasil)', flag: '🇧🇷' },
-    { code: 'en', name: 'English', fullName: 'English', flag: '🇺🇸' },
-    { code: 'es', name: 'Español', fullName: 'Español', flag: '🇪🇸' },
-    { code: 'fr', name: 'Français', fullName: 'Français', flag: '🇫🇷' },
-    { code: 'tr', name: 'Türkçe', fullName: 'Türkçe', flag: '🇹🇷' },
-    { code: 'ar', name: 'العربية', fullName: 'العربية', flag: '🇸🇦' }
+    { code: 'pt-BR', name: 'Português', fullName: 'Português (Brasil)', Flag: FlagBR },
+    { code: 'en', name: 'English', fullName: 'English', Flag: FlagUS },
+    { code: 'es', name: 'Español', fullName: 'Español', Flag: FlagES },
+    { code: 'fr', name: 'Français', fullName: 'Français', Flag: FlagFR },
+    { code: 'tr', name: 'Türkçe', fullName: 'Türkçe', Flag: FlagTR },
+    { code: 'ar', name: 'العربية', fullName: 'العربية', Flag: FlagSA }
   ]
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0]
@@ -47,7 +96,7 @@ const LanguageSelector: React.FC = () => {
           <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-accent-500 rounded-full animate-pulse"></div>
         </div>
         <div className="hidden md:flex items-center gap-1.5">
-          <span className="text-xl leading-none">{currentLanguage.flag}</span>
+          <currentLanguage.Flag />
           <span className="text-sm font-semibold text-primary-800">
             {currentLanguage.name}
           </span>
@@ -81,9 +130,9 @@ const LanguageSelector: React.FC = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-primary-100/0 via-primary-100/50 to-primary-100/0 translate-x-[-100%] group-hover/item:translate-x-[100%] transition-transform duration-700"></div>
 
                   {/* Flag */}
-                  <span className="text-3xl leading-none relative z-10 group-hover/item:scale-110 transition-transform duration-200">
-                    {lang.flag}
-                  </span>
+                  <div className="relative z-10 group-hover/item:scale-110 transition-transform duration-200">
+                    <lang.Flag />
+                  </div>
 
                   {/* Language name */}
                   <div className="flex-1 relative z-10">

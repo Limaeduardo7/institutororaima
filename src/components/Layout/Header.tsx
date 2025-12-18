@@ -19,6 +19,7 @@ export default function Header() {
     { to: "/doacoes", label: t('header.donations') },
     { to: "/transparencia", label: t('header.transparency') },
     { to: "/documentos", label: t('header.documents') },
+    { to: "/galeria", label: t('header.gallery') },
     { to: "/contato", label: t('header.contact') },
     { to: "/localizacao", label: t('header.location') }
   ];

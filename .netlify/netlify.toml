@@ -1,16 +1,15 @@
+functionsDirectory = "C:\\Users\\Eduar\\Desktop\\SITES\\Estação\\institutororaima\\netlify\\functions"
+functionsDirectoryOrigin = "default"
 headersOrigin = "config"
 redirectsOrigin = "config"
 plugins = []
-
-[functions]
-
-[functions."*"]
 
 [build]
 publish = "C:\\Users\\Eduar\\Desktop\\SITES\\Estação\\institutororaima\\dist"
 publishOrigin = "config"
 commandOrigin = "config"
 command = "npm run build"
+functions = "C:\\Users\\Eduar\\Desktop\\SITES\\Estação\\institutororaima\\netlify\\functions"
 
 [build.environment]
 NODE_VERSION = "20"
@@ -27,6 +26,10 @@ skip_processing = true
 [build.processing.js]
 
 [build.services]
+
+[functions]
+
+[functions."*"]
 
 [[headers]]
 for = "/*"

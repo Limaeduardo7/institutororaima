@@ -14,6 +14,7 @@
     "donations": "Doações",
     "transparency": "Transparência",
     "documents": "Documentos",
+    "gallery": "Galeria",
     "contact": "Contato",
     "location": "Localização"
   },
@@ -48,6 +49,11 @@
       "active_since": "Ativo desde",
       "learn_more": "Saiba Mais",
       "view_all": "Ver Todos os Projetos"
+    },
+    "gallery": {
+      "title": "Nossa Galeria",
+      "subtitle": "Um pouco do nosso dia a dia e das transformações que realizamos.",
+      "view_gallery": "Ver Galeria Completa"
     },
     "cta": {
       "title": "Faça Parte Desta Transformação",
@@ -153,6 +159,17 @@
     "contribute": "Quero Contribuir",
     "volunteer": "Seja Voluntário"
   },
+  "gallery": {
+    "hero_title": "Galeria de Momentos",
+    "hero_subtitle": "Confira registros das nossas ações, eventos e o impacto que estamos gerando juntos.",
+    "filters": {
+      "all": "Todos",
+      "images": "Imagens",
+      "videos": "Vídeos"
+    },
+    "loading": "Carregando galeria...",
+    "no_items": "Nenhum item encontrado na galeria."
+  },
   "events": {
     "hero_title": "Nossos Eventos e Projetos Sociais",
     "hero_subtitle": "Conheça as iniciativas que estão transformando vidas em Roraima",
@@ -211,11 +228,11 @@
     "card_description": "Parcelamento disponível",
     "boleto": "Boleto Bancário",
     "boleto_description": "Vencimento em 3 dias",
-    "stripe": "Cartão Internacional",
-    "stripe_card": "Cartão de Crédito/Débito",
-    "stripe_description": "Powered by Stripe - Pagamento internacional seguro",
+    "paypal": "PayPal",
+    "paypal_card": "PayPal - Cartão de Crédito/Débito",
+    "paypal_description": "Powered by PayPal - Pagamento internacional seguro",
     "donate_button": "Pagar com Mercado Pago",
-    "donate_stripe": "Pagar com Stripe",
+    "donate_paypal": "Pagar com PayPal",
     "processing": "Processando...",
     "thank_you": "Doação Confirmada!",
     "thank_you_message": "Obrigado pela sua generosidade. Sua doação fará a diferença na vida de muitas pessoas.",
@@ -276,7 +293,7 @@
     "secure_payment": "Pagamento Seguro",
     "secure_payment_intl": "Secure Payment",
     "mercadopago_info": "Seu pagamento será processado com segurança pelo <strong>Mercado Pago</strong>, a plataforma de pagamentos mais confiável do Brasil.",
-    "stripe_info": "Your payment will be securely processed by <strong>Stripe</strong>, the world's leading international payment platform trusted by millions.",
+    "paypal_info": "Your payment will be securely processed by <strong>PayPal</strong>, the world's leading international payment platform trusted by millions.",
     "how_it_works": "Como funciona:",
     "how_it_works_intl": "How it works:",
     "mercadopago_steps": {
@@ -286,10 +303,10 @@
       "step4": "Finalize o pagamento",
       "step5": "Você receberá o comprovante por e-mail"
     },
-    "stripe_steps": {
-      "step1": "Click \"Pay with Stripe\"",
-      "step2": "You'll be redirected to Stripe's secure checkout page",
-      "step3": "Enter your credit/debit card details",
+    "paypal_steps": {
+      "step1": "Click \"Pay with PayPal\"",
+      "step2": "You'll be redirected to PayPal's secure checkout page",
+      "step3": "Enter your payment details or use your PayPal account",
       "step4": "Complete the payment",
       "step5": "You'll receive a receipt via email"
     }

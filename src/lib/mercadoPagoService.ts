@@ -20,59 +20,94 @@ export interface MercadoPagoPreference {
 
 /**
  * Cria uma preferência de pagamento no Mercado Pago
- * e retorna o link para checkout
+ * através da função Netlify (para evitar problemas de CORS e segurança)
  */
 export const createPaymentPreference = async (
   donationData: DonationData
 ): Promise<MercadoPagoPreference> => {
   try {
-    const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+    // Usar função Netlify em produção, API direta em desenvolvimento local
+    const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+
+    if (isDevelopment && MERCADOPAGO_ACCESS_TOKEN) {
+      // Em desenvolvimento local, usar API direta (apenas se token estiver disponível)
+      const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${MERCADOPAGO_ACCESS_TOKEN}`
+        },
+        body: JSON.stringify({
+          items: [
+            {
+              title: 'Doação - Instituto Estação',
+              description: 'Contribuição para as ações sociais do Instituto Estação em Roraima',
+              quantity: 1,
+              unit_price: Number(donationData.amount),
+              currency_id: 'BRL'
+            }
+          ],
+          payer: {
+            name: donationData.donor_name || 'Doador Anônimo',
+            email: donationData.donor_email || 'doador@institutoeestacao.org.br',
+            phone: {
+              area_code: donationData.donor_phone?.substring(0, 2) || '95',
+              number: donationData.donor_phone?.substring(2) || '999999999'
+            }
+          },
+          back_urls: {
+            success: `${window.location.origin}/doacoes?status=success`,
+            failure: `${window.location.origin}/doacoes?status=failure`,
+            pending: `${window.location.origin}/doacoes?status=pending`
+          },
+          auto_return: 'approved',
+          payment_methods: {
+            excluded_payment_types: [],
+            installments: 12
+          },
+          statement_descriptor: 'Instituto Estacao',
+          external_reference: `DONATION-${Date.now()}`
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Mercado Pago API Error:', errorData)
+        throw new Error('Erro ao criar preferência de pagamento')
+      }
+
+      const preference: MercadoPagoPreference = await response.json()
+      return preference
+    }
+
+    // Em produção ou se não houver token local, usar função Netlify
+    const response = await fetch('/.netlify/functions/create-mercadopago-checkout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MERCADOPAGO_ACCESS_TOKEN}`
       },
       body: JSON.stringify({
-        items: [
-          {
-            title: 'Doação - Instituto Estação',
-            description: 'Contribuição para as ações sociais do Instituto Estação em Roraima',
-            quantity: 1,
-            unit_price: Number(donationData.amount),
-            currency_id: 'BRL'
-          }
-        ],
-        payer: {
-          name: donationData.donor_name || 'Doador Anônimo',
-          email: donationData.donor_email || 'doador@institutoeestacao.org.br',
-          phone: {
-            area_code: donationData.donor_phone?.substring(0, 2) || '95',
-            number: donationData.donor_phone?.substring(2) || '999999999'
-          }
-        },
-        back_urls: {
-          success: `${window.location.origin}/doacoes?status=success`,
-          failure: `${window.location.origin}/doacoes?status=failure`,
-          pending: `${window.location.origin}/doacoes?status=pending`
-        },
-        auto_return: 'approved',
-        payment_methods: {
-          excluded_payment_types: [],
-          installments: 12
-        },
-        statement_descriptor: 'Instituto Estacao',
-        external_reference: `DONATION-${Date.now()}`
+        amount: donationData.amount,
+        donor_name: donationData.donor_name,
+        donor_email: donationData.donor_email,
+        donor_phone: donationData.donor_phone,
+        payment_method: donationData.payment_method,
       })
     })
 
     if (!response.ok) {
       const errorData = await response.json()
-      console.error('Mercado Pago API Error:', errorData)
-      throw new Error('Erro ao criar preferência de pagamento')
+      console.error('Netlify Function Error:', errorData)
+      throw new Error(errorData.error || 'Erro ao criar preferência de pagamento')
     }
 
-    const preference: MercadoPagoPreference = await response.json()
-    return preference
+    const { preferenceId, checkoutUrl } = await response.json()
+
+    return {
+      id: preferenceId,
+      init_point: checkoutUrl,
+      sandbox_init_point: checkoutUrl
+    }
   } catch (error) {
     console.error('Error creating payment preference:', error)
     throw error

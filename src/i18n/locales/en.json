@@ -14,6 +14,7 @@
     "donations": "Donations",
     "transparency": "Transparency",
     "documents": "Documents",
+    "gallery": "Gallery",
     "contact": "Contact",
     "location": "Location"
   },
@@ -41,13 +42,18 @@
     },
     "projects": {
       "title": "Transformative Projects",
-      "subtitle": "Learn about some of the initiatives that are creating real impact and changing lives in our community",
+      "subtitle": "Discover some of the initiatives that are creating real impact and changing lives in our community",
       "loading": "Loading projects...",
       "active": "Active Project",
       "beneficiaries": "beneficiaries served",
       "active_since": "Active since",
       "learn_more": "Learn More",
       "view_all": "View All Projects"
+    },
+    "gallery": {
+      "title": "Our Gallery",
+      "subtitle": "A glimpse of our daily life and the transformations we achieve.",
+      "view_gallery": "View Full Gallery"
     },
     "cta": {
       "title": "Be Part of This Transformation",
@@ -203,6 +209,17 @@
     "contribute": "I Want to Contribute",
     "volunteer": "Become a Volunteer"
   },
+  "gallery": {
+    "hero_title": "Moments Gallery",
+    "hero_subtitle": "Check out records of our actions, events, and the impact we are creating together.",
+    "filters": {
+      "all": "All",
+      "images": "Images",
+      "videos": "Videos"
+    },
+    "loading": "Loading gallery...",
+    "no_items": "No items found in the gallery."
+  },
   "events": {
     "hero_title": "Our Events and Social Projects",
     "hero_subtitle": "Discover the initiatives that are transforming lives in Roraima",
@@ -261,11 +278,11 @@
     "card_description": "Installments available",
     "boleto": "Bank Slip",
     "boleto_description": "Due in 3 days",
-    "stripe": "International Card",
-    "stripe_card": "Credit/Debit Card",
-    "stripe_description": "Powered by Stripe - Secure international payment",
+    "paypal": "PayPal",
+    "paypal_card": "PayPal - Credit/Debit Card",
+    "paypal_description": "Powered by PayPal - Secure international payment",
     "donate_button": "Pay with Mercado Pago",
-    "donate_stripe": "Pay with Stripe",
+    "donate_paypal": "Pay with PayPal",
     "processing": "Processing...",
     "thank_you": "Donation Confirmed!",
     "thank_you_message": "Thank you for your generosity. Your donation will make a difference in many people's lives.",
@@ -326,7 +343,7 @@
     "secure_payment": "Secure Payment",
     "secure_payment_intl": "Secure Payment",
     "mercadopago_info": "Your payment will be securely processed by <strong>Mercado Pago</strong>, Brazil's most trusted payment platform.",
-    "stripe_info": "Your payment will be securely processed by <strong>Stripe</strong>, the world's leading international payment platform trusted by millions.",
+    "paypal_info": "Your payment will be securely processed by <strong>PayPal</strong>, the world's leading international payment platform trusted by millions.",
     "how_it_works": "How it works:",
     "how_it_works_intl": "How it works:",
     "mercadopago_steps": {
@@ -336,10 +353,10 @@
       "step4": "Complete the payment",
       "step5": "You'll receive the receipt via email"
     },
-    "stripe_steps": {
-      "step1": "Click \"Pay with Stripe\"",
-      "step2": "You'll be redirected to Stripe's secure checkout page",
-      "step3": "Enter your credit/debit card details",
+    "paypal_steps": {
+      "step1": "Click \"Pay with PayPal\"",
+      "step2": "You'll be redirected to PayPal's secure checkout page",
+      "step3": "Enter your payment details or use your PayPal account",
       "step4": "Complete the payment",
       "step5": "You'll receive a receipt via email"
     }

@@ -14,6 +14,7 @@
     "donations": "Bağışlar",
     "transparency": "Şeffaflık",
     "documents": "Belgeler",
+    "gallery": "Galeri",
     "contact": "İletişim",
     "location": "Konum"
   },
@@ -41,13 +42,18 @@
     },
     "projects": {
       "title": "Dönüştürücü Projeler",
-      "subtitle": "Topluluğumuzda gerçek etki yaratan ve hayatları değiştiren girişimlerden bazılarını öğrenin",
+      "subtitle": "Topluluğumuzda gerçek etki yaratan ve hayatları değiştiren girişimlerimizden bazılarını keşfedin",
       "loading": "Projeler yükleniyor...",
       "active": "Aktif Proje",
-      "beneficiaries": "yararlanan hizmet verdi",
-      "active_since": "Beri aktif",
+      "beneficiaries": "faydalanıcı hizmet aldı",
+      "active_since": "Şu tarihten beri aktif",
       "learn_more": "Daha Fazla Bilgi",
       "view_all": "Tüm Projeleri Görüntüle"
+    },
+    "gallery": {
+      "title": "Galerimiz",
+      "subtitle": "Günlük hayatımızdan ve gerçekleştirdiğimiz dönüşümlerden bir kesit.",
+      "view_gallery": "Tüm Galeriyi Görüntüle"
     },
     "cta": {
       "title": "Bu Dönüşümün Bir Parçası Olun",
@@ -189,6 +195,17 @@
     "contribute": "Katkıda Bulunmak İstiyorum",
     "volunteer": "Gönüllü Olun"
   },
+  "gallery": {
+    "hero_title": "Anı Galerisi",
+    "hero_subtitle": "Eylemlerimizin, etkinliklerimizin ve birlikte yarattığımız etkinin kayıtlarına göz atın.",
+    "filters": {
+      "all": "Tümü",
+      "images": "Görüntüler",
+      "videos": "Videolar"
+    },
+    "loading": "Galeri yükleniyor...",
+    "no_items": "Galeride öğe bulunamadı."
+  },
   "events": {
     "hero_title": "Etkinliklerimiz ve Sosyal Projelerimiz",
     "hero_subtitle": "Roraima'da hayatları dönüştüren girişimleri keşfedin",
@@ -247,11 +264,11 @@
     "card_description": "Taksit mevcut",
     "boleto": "Banka Havalesi",
     "boleto_description": "3 gün içinde ödeme",
-    "stripe": "Uluslararası Kart",
-    "stripe_card": "Kredi/Banka Kartı",
-    "stripe_description": "Powered by Stripe - Güvenli uluslararası ödeme",
+    "paypal": "Uluslararası Kart",
+    "paypal_card": "Kredi/Banka Kartı",
+    "paypal_description": "Powered by PayPal - Güvenli uluslararası ödeme",
     "donate_button": "Mercado Pago ile Öde",
-    "donate_stripe": "Stripe ile Öde",
+    "donate_paypal": "PayPal ile Öde",
     "processing": "İşleniyor...",
     "thank_you": "Bağış Onaylandı!",
     "thank_you_message": "Cömertliğiniz için teşekkür ederiz. Bağışınız birçok insanın hayatında fark yaratacak.",
@@ -312,7 +329,7 @@
     "secure_payment": "Güvenli Ödeme",
     "secure_payment_intl": "Güvenli Ödeme",
     "mercadopago_info": "Ödemeniz <strong>Mercado Pago</strong> tarafından güvenli bir şekilde işlenecektir, Brezilya'nın en güvenilir ödeme platformu.",
-    "stripe_info": "Ödemeniz <strong>Stripe</strong> tarafından güvenli bir şekilde işlenecektir, milyonlarca kişi tarafından güvenilen dünyanın önde gelen uluslararası ödeme platformu.",
+    "paypal_info": "Ödemeniz <strong>PayPal</strong> tarafından güvenli bir şekilde işlenecektir, milyonlarca kişi tarafından güvenilen dünyanın önde gelen uluslararası ödeme platformu.",
     "how_it_works": "Nasıl çalışır:",
     "how_it_works_intl": "Nasıl çalışır:",
     "mercadopago_steps": {
@@ -322,9 +339,9 @@
       "step4": "Ödemeyi tamamlayın",
       "step5": "Makbuzu e-posta ile alacaksınız"
     },
-    "stripe_steps": {
-      "step1": "\"Stripe ile Öde\" düğmesine tıklayın",
-      "step2": "Stripe'ın güvenli ödeme sayfasına yönlendirileceksiniz",
+    "paypal_steps": {
+      "step1": "\"PayPal ile Öde\" düğmesine tıklayın",
+      "step2": "PayPal'ın güvenli ödeme sayfasına yönlendirileceksiniz",
       "step3": "Kredi/banka kartı bilgilerinizi girin",
       "step4": "Ödemeyi tamamlayın",
       "step5": "E-posta ile bir makbuz alacaksınız"

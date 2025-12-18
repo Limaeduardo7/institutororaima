@@ -40,7 +40,7 @@ export interface Donation {
   donor_email?: string
   donor_phone?: string
   amount: number
-  payment_method: 'pix' | 'card' | 'boleto' | 'stripe'
+  payment_method: 'pix' | 'card' | 'boleto' | 'paypal'
   status: 'pending' | 'completed' | 'failed'
   transaction_id?: string
   message?: string
@@ -71,6 +71,20 @@ export interface Document {
   upload_date: string
   year?: number
   is_public: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface GalleryItem {
+  id: string
+  title: string
+  description?: string
+  media_type: 'image' | 'video'
+  url: string
+  thumbnail_url?: string
+  category: string
+  show_on_home?: boolean
+  is_virtual?: boolean // Indica se o item existe apenas no Storage e não no banco
   created_at: string
   updated_at: string
 }

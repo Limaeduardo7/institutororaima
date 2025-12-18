@@ -1,8 +1,33 @@
 import { createClient } from '@supabase/supabase-js'
-import type { SocialAction, Event, FinancialDocument, Donation, ContactMessage, Document } from './types'
+import type { SocialAction, Event, FinancialDocument, Donation, ContactMessage, Document, GalleryItem } from './types'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+// Validar se as variáveis de ambiente estão configuradas
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Supabase configuration missing:', {
+    hasUrl: !!supabaseUrl,
+    hasKey: !!supabaseKey,
+    url: supabaseUrl,
+  })
+  throw new Error(
+    'Supabase configuration is missing. Please check your environment variables:\n' +
+    '- VITE_SUPABASE_URL must be set\n' +
+    '- VITE_SUPABASE_ANON_KEY must be set\n' +
+    'In Netlify: Go to Site settings > Environment variables and add these variables.'
+  )
+}
+
+// Validar formato da URL
+if (!supabaseUrl.startsWith('http://') && !supabaseUrl.startsWith('https://')) {
+  console.error('Invalid Supabase URL format:', supabaseUrl)
+  throw new Error(
+    `Invalid Supabase URL: "${supabaseUrl}"\n` +
+    'The URL must start with http:// or https://\n' +
+    'Example: https://your-project.supabase.co'
+  )
+}
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
@@ -494,6 +519,140 @@ export const documentService = {
       .eq('id', id);
 
     if (error) throw error;
+  }
+}
+
+export const galleryService = {
+  async getAll(): Promise<GalleryItem[]> {
+    // 1. Buscar itens do banco de dados
+    const { data: dbItems, error: dbError } = await supabase
+      .from('gallery_items')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (dbError && dbError.code !== '42P01') {
+       console.error('Erro ao buscar do banco:', dbError);
+    }
+
+    const items: GalleryItem[] = dbItems || [];
+    const dbUrls = new Set(items.map(i => i.url));
+
+    // 2. Buscar arquivos do bucket 'images' na pasta 'gallery'
+    try {
+      const { data: storageFiles, error: storageError } = await supabase
+        .storage
+        .from('images')
+        .list('gallery', {
+          limit: 100,
+          offset: 0,
+          sortBy: { column: 'created_at', order: 'desc' },
+        });
+
+      if (!storageError && storageFiles) {
+        // Obter URL base do bucket
+        const { data: { publicUrl: placeholderUrl } } = supabase.storage
+          .from('images')
+          .getPublicUrl('gallery/placeholder');
+        
+        // Remove 'placeholder' para ter a base .../gallery/
+        const baseUrl = placeholderUrl.substring(0, placeholderUrl.lastIndexOf('/') + 1); 
+
+        for (const file of storageFiles) {
+          if (file.name === '.emptyFolderPlaceholder') continue;
+
+          const fileUrl = `${baseUrl}${file.name}`;
+          
+          // Se não estiver no banco, adiciona como item
+          if (!dbUrls.has(fileUrl)) {
+            const isVideo = file.metadata?.mimetype?.startsWith('video') || 
+                           file.name.match(/\.(mp4|webm|ogg|mov)$/i);
+            
+            items.push({
+              id: file.id || file.name,
+              title: file.name.split('.')[0].replace(/[_-]/g, ' '),
+              description: '',
+              media_type: isVideo ? 'video' : 'image',
+              url: fileUrl,
+              category: 'Galeria',
+              created_at: file.created_at || new Date().toISOString(),
+              updated_at: file.updated_at || new Date().toISOString(),
+              show_on_home: false,
+              is_virtual: true
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao listar storage (pode ser permissão):', e);
+    }
+
+    // Reordenar tudo por data (mais recente primeiro)
+    return items.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  },
+
+  async getFeatured(): Promise<GalleryItem[]> {
+    const { data, error } = await supabase
+      .from('gallery_items')
+      .select('*')
+      .eq('show_on_home', true)
+      .order('created_at', { ascending: false })
+      .limit(6);
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async create(item: Omit<GalleryItem, 'id' | 'created_at' | 'updated_at'>): Promise<GalleryItem> {
+    const { data, error } = await supabase
+      .from('gallery_items')
+      .insert([{ ...item, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async update(id: string, updates: Partial<GalleryItem>): Promise<GalleryItem> {
+    const { data, error } = await supabase
+      .from('gallery_items')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('gallery_items')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+  
+  async uploadMedia(file: File): Promise<string> {
+    // Reutiliza bucket 'images' mas organiza em pasta gallery/
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+    const filePath = `gallery/${fileName}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('images')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage
+      .from('images')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
   }
 }
 

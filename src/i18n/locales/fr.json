@@ -14,6 +14,7 @@
     "donations": "Dons",
     "transparency": "Transparence",
     "documents": "Documents",
+    "gallery": "Galerie",
     "contact": "Contact",
     "location": "Localisation"
   },
@@ -41,13 +42,18 @@
     },
     "projects": {
       "title": "Projets Transformateurs",
-      "subtitle": "Découvrez certaines des initiatives qui créent un impact réel et changent des vies dans notre communauté",
+      "subtitle": "Découvrez quelques-unes des initiatives qui créent un impact réel et changent des vies dans notre communauté",
       "loading": "Chargement des projets...",
       "active": "Projet Actif",
       "beneficiaries": "bénéficiaires servis",
       "active_since": "Actif depuis",
       "learn_more": "En Savoir Plus",
       "view_all": "Voir Tous les Projets"
+    },
+    "gallery": {
+      "title": "Notre Galerie",
+      "subtitle": "Un aperçu de notre quotidien et des transformations que nous réalisons.",
+      "view_gallery": "Voir la Galerie Complète"
     },
     "cta": {
       "title": "Faites Partie de Cette Transformation",
@@ -189,6 +195,17 @@
     "contribute": "Je Veux Contribuer",
     "volunteer": "Devenez Bénévole"
   },
+  "gallery": {
+    "hero_title": "Galerie de Moments",
+    "hero_subtitle": "Découvrez les enregistrements de nos actions, événements et l'impact que nous générons ensemble.",
+    "filters": {
+      "all": "Tous",
+      "images": "Images",
+      "videos": "Vidéos"
+    },
+    "loading": "Chargement de la galerie...",
+    "no_items": "Aucun élément trouvé dans la galerie."
+  },
   "events": {
     "hero_title": "Nos Événements et Projets Sociaux",
     "hero_subtitle": "Découvrez les initiatives qui transforment des vies à Roraima",
@@ -247,11 +264,11 @@
     "card_description": "Paiement échelonné disponible",
     "boleto": "Billet Bancaire",
     "boleto_description": "Échéance dans 3 jours",
-    "stripe": "Carte Internationale",
-    "stripe_card": "Carte de Crédit/Débit",
-    "stripe_description": "Powered by Stripe - Paiement international sécurisé",
+    "paypal": "Carte Internationale",
+    "paypal_card": "Carte de Crédit/Débit",
+    "paypal_description": "Powered by PayPal - Paiement international sécurisé",
     "donate_button": "Payer avec Mercado Pago",
-    "donate_stripe": "Payer avec Stripe",
+    "donate_paypal": "Payer avec PayPal",
     "processing": "Traitement en cours...",
     "thank_you": "Don Confirmé !",
     "thank_you_message": "Merci pour votre générosité. Votre don fera la différence dans la vie de nombreuses personnes.",
@@ -312,7 +329,7 @@
     "secure_payment": "Paiement Sécurisé",
     "secure_payment_intl": "Paiement Sécurisé",
     "mercadopago_info": "Votre paiement sera traité en toute sécurité par <strong>Mercado Pago</strong>, la plateforme de paiement la plus fiable du Brésil.",
-    "stripe_info": "Votre paiement sera traité en toute sécurité par <strong>Stripe</strong>, la principale plateforme de paiement internationale au monde, approuvée par des millions d'utilisateurs.",
+    "paypal_info": "Votre paiement sera traité en toute sécurité par <strong>PayPal</strong>, la principale plateforme de paiement internationale au monde, approuvée par des millions d'utilisateurs.",
     "how_it_works": "Comment ça marche:",
     "how_it_works_intl": "Comment ça marche:",
     "mercadopago_steps": {
@@ -322,9 +339,9 @@
       "step4": "Finalisez le paiement",
       "step5": "Vous recevrez le reçu par email"
     },
-    "stripe_steps": {
-      "step1": "Cliquez sur \"Payer avec Stripe\"",
-      "step2": "Vous serez redirigé vers la page de paiement sécurisée de Stripe",
+    "paypal_steps": {
+      "step1": "Cliquez sur \"Payer avec PayPal\"",
+      "step2": "Vous serez redirigé vers la page de paiement sécurisée de PayPal",
       "step3": "Entrez les détails de votre carte de crédit/débit",
       "step4": "Finalisez le paiement",
       "step5": "Vous recevrez un reçu par email"

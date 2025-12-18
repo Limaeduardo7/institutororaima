@@ -14,6 +14,7 @@
     "donations": "Donaciones",
     "transparency": "Transparencia",
     "documents": "Documentos",
+    "gallery": "Galería",
     "contact": "Contacto",
     "location": "Ubicación"
   },
@@ -41,13 +42,18 @@
     },
     "projects": {
       "title": "Proyectos Transformadores",
-      "subtitle": "Conozca algunas de las iniciativas que están creando impacto real y cambiando vidas en nuestra comunidad",
+      "subtitle": "Conozca algunas de las iniciativas que están creando un impacto real y cambiando vidas en nuestra comunidad",
       "loading": "Cargando proyectos...",
       "active": "Proyecto Activo",
       "beneficiaries": "beneficiarios atendidos",
       "active_since": "Activo desde",
-      "learn_more": "Saber Más",
+      "learn_more": "Sepa Más",
       "view_all": "Ver Todos los Proyectos"
+    },
+    "gallery": {
+      "title": "Nuestra Galería",
+      "subtitle": "Un poco de nuestro día a día y las transformaciones que realizamos.",
+      "view_gallery": "Ver Galería Completa"
     },
     "cta": {
       "title": "Sé Parte de Esta Transformación",
@@ -148,6 +154,7 @@
     "founders_title": "Nuestros Fundadores y Liderazgo",
     "founders_subtitle": "Conozca a las personas visionarias que iniciaron este viaje de transformación social en Roraima",
     "specialties": "Especialidades",
+    "social_impact": "Impacto Social",
     "leadership_message_title": "Mensaje del Liderazgo",
     "leadership_message_text": "Fundamos el Instituto Estação con la convicción de que toda persona merece oportunidades para crecer y prosperar. Durante más de dos décadas, hemos sido testigos de transformaciones extraordinarias en las vidas de las familias que atendemos. Nuestra misión continúa siendo un puente entre la realidad actual y el futuro que soñamos para Roraima.",
     "leadership_message_author": "Equipo Fundador del Instituto Estação",
@@ -188,6 +195,17 @@
     "cta_subtitle": "Te invitamos a formar parte de este viaje de transformación social en Roraima. Juntos, podemos escribir un futuro mejor.",
     "contribute": "Quiero Contribuir",
     "volunteer": "Sé Voluntario"
+  },
+  "gallery": {
+    "hero_title": "Galería de Momentos",
+    "hero_subtitle": "Vea registros de nuestras acciones, eventos y el impacto que estamos generando juntos.",
+    "filters": {
+      "all": "Todos",
+      "images": "Imágenes",
+      "videos": "Videos"
+    },
+    "loading": "Cargando galería...",
+    "no_items": "No se encontraron elementos en la galería."
   },
   "events": {
     "hero_title": "Nuestros Eventos y Proyectos Sociales",
@@ -247,11 +265,11 @@
     "card_description": "Cuotas disponibles",
     "boleto": "Boleto Bancario",
     "boleto_description": "Vencimiento en 3 días",
-    "stripe": "Tarjeta Internacional",
-    "stripe_card": "Tarjeta de Crédito/Débito",
-    "stripe_description": "Powered by Stripe - Pago internacional seguro",
+    "paypal": "Tarjeta Internacional",
+    "paypal_card": "Tarjeta de Crédito/Débito",
+    "paypal_description": "Powered by PayPal - Pago internacional seguro",
     "donate_button": "Pagar con Mercado Pago",
-    "donate_stripe": "Pagar con Stripe",
+    "donate_paypal": "Pagar con PayPal",
     "processing": "Procesando...",
     "thank_you": "¡Donación Confirmada!",
     "thank_you_message": "Gracias por tu generosidad. Tu donación marcará la diferencia en la vida de muchas personas.",
@@ -312,7 +330,7 @@
     "secure_payment": "Pago Seguro",
     "secure_payment_intl": "Pago Seguro",
     "mercadopago_info": "Tu pago será procesado de forma segura por <strong>Mercado Pago</strong>, la plataforma de pagos más confiable de Brasil.",
-    "stripe_info": "Tu pago será procesado de forma segura por <strong>Stripe</strong>, la plataforma de pagos internacionales líder en el mundo, confiada por millones.",
+    "paypal_info": "Tu pago será procesado de forma segura por <strong>PayPal</strong>, la plataforma de pagos internacionales líder en el mundo, confiada por millones.",
     "how_it_works": "Cómo funciona:",
     "how_it_works_intl": "Cómo funciona:",
     "mercadopago_steps": {
@@ -322,9 +340,9 @@
       "step4": "Finaliza el pago",
       "step5": "Recibirás el comprobante por correo electrónico"
     },
-    "stripe_steps": {
-      "step1": "Haz clic en \"Pagar con Stripe\"",
-      "step2": "Serás redirigido a la página de pago segura de Stripe",
+    "paypal_steps": {
+      "step1": "Haz clic en \"Pagar con PayPal\"",
+      "step2": "Serás redirigido a la página de pago segura de PayPal",
       "step3": "Ingresa los datos de tu tarjeta de crédito/débito",
       "step4": "Completa el pago",
       "step5": "Recibirás un recibo por correo electrónico"
