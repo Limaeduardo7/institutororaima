@@ -90,8 +90,7 @@ export const processPayPalDonation = async (
     window.location.href = approvalUrl
   } catch (error) {
     console.error('Failed to process PayPal donation:', error)
-    // Mensagem amigável informando que está em desenvolvimento
-    throw new Error('Pagamentos internacionais via PayPal estão em desenvolvimento. Por favor, utilize o Mercado Pago para doações nacionais ou entre em contato conosco.')
+    throw error
   }
 }
 

@@ -5,7 +5,9 @@ import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { processDonation } from '../lib/mercadoPagoService'
+import { processPagarmeDonation, savePagarmeDonation, type PagarmeDonationData } from '../lib/pagarmeService'
 import { processPayPalDonation, PAYPAL_CURRENCIES, formatCurrency } from '../lib/paypalService'
+import { PagarmeCheckout } from '../components/PagarmeCheckout'
 import {
   Heart,
   CreditCard,
@@ -34,6 +36,7 @@ const Doacoes: React.FC = () => {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [customAmount, setCustomAmount] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'boleto' | 'paypal' | null>(null)
+  const [paymentProvider, setPaymentProvider] = useState<'mercadopago' | 'pagarme'>('mercadopago')
   const [isInternational, setIsInternational] = useState(false)
   const [selectedCurrency, setSelectedCurrency] = useState<keyof typeof PAYPAL_CURRENCIES>('USD')
   const [donorInfo, setDonorInfo] = useState({
@@ -46,6 +49,9 @@ const Doacoes: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [pixCopied, setPixCopied] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [showPagarmeCheckout, setShowPagarmeCheckout] = useState(false)
+  const [pagarmeData, setPagarmeData] = useState<PagarmeDonationData | null>(null)
+  const [showBankTransfer, setShowBankTransfer] = useState(false)
 
   // Verificar status do pagamento ao retornar do Mercado Pago
   useEffect(() => {
@@ -100,6 +106,12 @@ const Doacoes: React.FC = () => {
       return
     }
 
+    // Validar email obrigatório para Pagar.me
+    if (paymentProvider === 'pagarme' && !donorInfo.email) {
+      setError('Email é obrigatório para doações via Pagar.me')
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -113,6 +125,19 @@ const Doacoes: React.FC = () => {
           donor_email: donorInfo.email || undefined,
           donor_phone: donorInfo.phone || undefined,
         })
+      } else if (paymentProvider === 'pagarme') {
+        // Processar doação nacional via Pagar.me - abrir modal de checkout
+        const donationData: PagarmeDonationData = {
+          amount,
+          donor_name: donorInfo.name || 'Doador Anônimo',
+          donor_email: donorInfo.email,
+          donor_phone: donorInfo.phone || undefined,
+          payment_method: paymentMethod === 'card' ? 'credit_card' : paymentMethod as 'pix' | 'boleto' | 'credit_card',
+        }
+        setPagarmeData(donationData)
+        setShowPagarmeCheckout(true)
+        setLoading(false)
+        return
       } else {
         // Processar doação nacional via Mercado Pago
         const checkoutUrl = await processDonation({
@@ -375,6 +400,37 @@ const Doacoes: React.FC = () => {
                 </div>
               )}
 
+              {/* Payment Provider Selection (National only) */}
+              {!isInternational && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3 text-gray-800">
+                    Escolha o processador de pagamento
+                  </h3>
+                  <div className="flex gap-3">
+                    <Button
+                      variant={paymentProvider === 'mercadopago' ? 'primary' : 'outline'}
+                      onClick={() => {
+                        setPaymentProvider('mercadopago')
+                        setPaymentMethod(null)
+                      }}
+                      className="flex-1"
+                    >
+                      Mercado Pago
+                    </Button>
+                    <Button
+                      variant={paymentProvider === 'pagarme' ? 'primary' : 'outline'}
+                      onClick={() => {
+                        setPaymentProvider('pagarme')
+                        setPaymentMethod(null)
+                      }}
+                      className="flex-1"
+                    >
+                      Pagar.me
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Payment Methods */}
               <div className="mb-8">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800">
@@ -399,7 +455,7 @@ const Doacoes: React.FC = () => {
                       </div>
                     </Card>
                   ) : (
-                    // Mercado Pago (National Payment)
+                    // National Payment Options
                     <>
                       <Card
                         variant={paymentMethod === 'pix' ? 'elevated' : 'glass'}
@@ -535,7 +591,12 @@ const Doacoes: React.FC = () => {
                     <Heart className="w-5 h-5 mr-2" />
                     {loading
                       ? t('donations.processing')
-                      : (isInternational ? t('donations.donate_paypal') : t('donations.donate_button'))
+                      : (isInternational
+                          ? t('donations.donate_paypal')
+                          : (paymentProvider === 'pagarme'
+                              ? 'Pagar com Pagar.me'
+                              : t('donations.donate_button'))
+                        )
                     }
                   </Button>
                 )}
@@ -592,6 +653,134 @@ const Doacoes: React.FC = () => {
                 <p className="text-sm text-gray-600 leading-relaxed">
                   {t('donations.tax_deduction_text')}
                 </p>
+              </Card>
+
+              {/* Bank Transfer Info */}
+              <Card variant="glass" className="p-6">
+                <button
+                  onClick={() => setShowBankTransfer(!showBankTransfer)}
+                  className="w-full flex items-center justify-between text-left"
+                >
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                    <FileText className="w-5 h-5 mr-2 text-primary-600" />
+                    Transferência Bancária Manual
+                  </h3>
+                  <span className="text-gray-600">
+                    {showBankTransfer ? '−' : '+'}
+                  </span>
+                </button>
+
+                {showBankTransfer && (
+                  <div className="mt-4 space-y-4">
+                    <p className="text-sm text-gray-600 mb-4">
+                      Prefere fazer uma transferência direta? Use os dados bancários abaixo:
+                    </p>
+
+                    {/* PIX */}
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-green-800 mb-2 flex items-center">
+                        <Smartphone className="w-4 h-4 mr-2" />
+                        PIX (CNPJ)
+                      </h4>
+                      <div className="flex items-center justify-between">
+                        <code className="text-sm text-green-700 font-mono">03.576.906/0001-47</code>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            await navigator.clipboard.writeText('03576906000147')
+                            setPixCopied(true)
+                            setTimeout(() => setPixCopied(false), 2000)
+                          }}
+                          className="ml-2"
+                        >
+                          {pixCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Dados Bancários Nacionais */}
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-blue-800 mb-3">Dados Bancários (Brasil)</h4>
+                      <div className="space-y-2 text-sm text-blue-700">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <span className="font-semibold">Banco:</span>
+                            <p>BRASIL (001)</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold">Agência:</span>
+                            <p>3994-2</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold">Conta Corrente:</span>
+                            <p>31866-3</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold">Tipo:</span>
+                            <p>Corrente</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-blue-200">
+                          <span className="font-semibold">Beneficiário:</span>
+                          <p>Instituto Educ Desenvolv Tec Soc</p>
+                          <p className="text-xs mt-1">CNPJ: 03.576.906/0001-47</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Dados Internacionais */}
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <h4 className="font-semibold text-purple-800 mb-3 flex items-center">
+                        <Globe className="w-4 h-4 mr-2" />
+                        International Wire Transfer
+                      </h4>
+                      <div className="space-y-2 text-sm text-purple-700">
+                        <div>
+                          <span className="font-semibold">Bank Name:</span>
+                          <p>BRASIL</p>
+                        </div>
+                        <div>
+                          <span className="font-semibold">SWIFT Code:</span>
+                          <p className="font-mono">BRASBRRJ</p>
+                        </div>
+                        <div>
+                          <span className="font-semibold">IBAN:</span>
+                          <p className="font-mono">BR180000000039940000318663C1</p>
+                        </div>
+                        <div>
+                          <span className="font-semibold">Sort Code / ABA:</span>
+                          <p>001</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          <div>
+                            <span className="font-semibold">City:</span>
+                            <p>RORAINÓPOLIS</p>
+                          </div>
+                          <div>
+                            <span className="font-semibold">State:</span>
+                            <p>RR - RORAIMA</p>
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <span className="font-semibold">Country:</span>
+                          <p>BRAZIL</p>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-purple-200">
+                          <span className="font-semibold">Account Name:</span>
+                          <p>Instituto Educ Desenvolv Tec Soc</p>
+                          <p className="text-xs mt-1">Account Type: CORRENTE (Checking)</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                      <p className="text-sm text-yellow-800">
+                        <strong>Importante:</strong> Após realizar a transferência, por favor envie o comprovante para nosso email junto com seus dados para emissão do recibo de doação.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </Card>
             </div>
           </div>
@@ -775,6 +964,32 @@ const Doacoes: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Modal de Checkout Pagar.me */}
+      {showPagarmeCheckout && pagarmeData && (
+        <PagarmeCheckout
+          amount={pagarmeData.amount}
+          donorName={pagarmeData.donor_name || ''}
+          donorEmail={pagarmeData.donor_email || ''}
+          donorPhone={pagarmeData.donor_phone || ''}
+          paymentMethod={pagarmeData.payment_method}
+          onClose={() => {
+            setShowPagarmeCheckout(false)
+            setPagarmeData(null)
+          }}
+          onSuccess={async (transactionId) => {
+            // Salvar doação no banco
+            await savePagarmeDonation(pagarmeData, transactionId)
+            setShowPagarmeCheckout(false)
+            setPagarmeData(null)
+            setSuccess(true)
+          }}
+          onError={(errorMessage) => {
+            setShowPagarmeCheckout(false)
+            setError(errorMessage)
+          }}
+        />
+      )}
     </div>
   )
 }
