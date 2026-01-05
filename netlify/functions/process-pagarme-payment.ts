@@ -171,12 +171,17 @@ export const handler: Handler = async (event) => {
     // Usando Basic Auth (Chave de API : senha vazia)
     const authHeader = `Basic ${Buffer.from(`${accessToken}:`).toString('base64')}`
 
-    const apiResponse = await fetch('https://api.pagar.me/core/v5/orders', {
+    // Fazer requisição para API V5 do Pagar.me
+    // IMPORTANTE: Para subcontas usando API V5 Core, o cabeçalho correto é 'account_id' (minúsculo)
+    // ou passar via parâmetro na URL dependendo da configuração.
+    const apiUrl = 'https://api.pagar.me/core/v5/orders'
+    
+    const apiResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': authHeader,
-        'X-Pagarme-Account-Id': accountId,
+        'account_id': accountId, // Tentando formato alternativo para V5
       },
       body: JSON.stringify(transactionData),
     })
