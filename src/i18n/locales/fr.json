@@ -328,13 +328,13 @@
     "summary_method": "Méthode",
     "secure_payment": "Paiement Sécurisé",
     "secure_payment_intl": "Paiement Sécurisé",
-    "mercadopago_info": "Votre paiement sera traité en toute sécurité par <strong>Mercado Pago</strong>, la plateforme de paiement la plus fiable du Brésil.",
+    "mercadopago_info": "Votre paiement sera traité en toute sécurité par <strong>Pagar.me</strong>, plateforme de paiement fiable et certifiée.",
     "paypal_info": "Votre paiement sera traité en toute sécurité par <strong>PayPal</strong>, la principale plateforme de paiement internationale au monde, approuvée par des millions d'utilisateurs.",
     "how_it_works": "Comment ça marche:",
     "how_it_works_intl": "Comment ça marche:",
     "mercadopago_steps": {
-      "step1": "Cliquez sur \"Payer avec Mercado Pago\"",
-      "step2": "Vous serez redirigé vers la page sécurisée de Mercado Pago",
+      "step1": "Cliquez sur \"Payer avec Pagar.me\"",
+      "step2": "Remplissez vos informations de paiement dans le formulaire sécurisé",
       "step3": "Choisissez votre méthode de paiement préférée (PIX, Carte ou Billet)",
       "step4": "Finalisez le paiement",
       "step5": "Vous recevrez le reçu par email"

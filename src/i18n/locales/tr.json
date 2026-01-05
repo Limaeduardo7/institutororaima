@@ -328,13 +328,13 @@
     "summary_method": "Yöntem",
     "secure_payment": "Güvenli Ödeme",
     "secure_payment_intl": "Güvenli Ödeme",
-    "mercadopago_info": "Ödemeniz <strong>Mercado Pago</strong> tarafından güvenli bir şekilde işlenecektir, Brezilya'nın en güvenilir ödeme platformu.",
+    "mercadopago_info": "Ödemeniz <strong>Pagar.me</strong> tarafından güvenli bir şekilde işlenecektir, güvenilir ve sertifikalı ödeme platformu.",
     "paypal_info": "Ödemeniz <strong>PayPal</strong> tarafından güvenli bir şekilde işlenecektir, milyonlarca kişi tarafından güvenilen dünyanın önde gelen uluslararası ödeme platformu.",
     "how_it_works": "Nasıl çalışır:",
     "how_it_works_intl": "Nasıl çalışır:",
     "mercadopago_steps": {
-      "step1": "\"Mercado Pago ile Öde\" düğmesine tıklayın",
-      "step2": "Mercado Pago'nun güvenli sayfasına yönlendirileceksiniz",
+      "step1": "\"Pagar.me ile Öde\" düğmesine tıklayın",
+      "step2": "Güvenli formda ödeme bilgilerinizi doldurun",
       "step3": "Tercih ettiğiniz ödeme yöntemini seçin (PIX, Kart veya Havale)",
       "step4": "Ödemeyi tamamlayın",
       "step5": "Makbuzu e-posta ile alacaksınız"

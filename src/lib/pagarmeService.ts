@@ -9,6 +9,7 @@ export interface PagarmeDonationData {
   donor_name?: string
   donor_email?: string
   donor_phone?: string
+  donor_cpf?: string
   message?: string
   payment_method: 'pix' | 'credit_card' | 'boleto'
 }

@@ -292,13 +292,13 @@
     "summary_method": "Método",
     "secure_payment": "Pagamento Seguro",
     "secure_payment_intl": "Secure Payment",
-    "mercadopago_info": "Seu pagamento será processado com segurança pelo <strong>Mercado Pago</strong>, a plataforma de pagamentos mais confiável do Brasil.",
+    "mercadopago_info": "Seu pagamento será processado com segurança pelo <strong>Pagar.me</strong>, plataforma de pagamentos confiável e certificada.",
     "paypal_info": "Your payment will be securely processed by <strong>PayPal</strong>, the world's leading international payment platform trusted by millions.",
     "how_it_works": "Como funciona:",
     "how_it_works_intl": "How it works:",
     "mercadopago_steps": {
-      "step1": "Clique em \"Pagar com Mercado Pago\"",
-      "step2": "Você será redirecionado para a página segura do Mercado Pago",
+      "step1": "Clique em \"Pagar com Pagar.me\"",
+      "step2": "Preencha os dados do pagamento no formulário seguro",
       "step3": "Escolha seu método de pagamento preferido (PIX, Cartão ou Boleto)",
       "step4": "Finalize o pagamento",
       "step5": "Você receberá o comprovante por e-mail"

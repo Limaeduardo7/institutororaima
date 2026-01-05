@@ -9,6 +9,7 @@ interface PagarmeCheckoutProps {
   donorName: string
   donorEmail: string
   donorPhone: string
+  donorCpf: string
   paymentMethod: 'pix' | 'credit_card' | 'boleto'
   onClose: () => void
   onSuccess: (transactionId: string) => void
@@ -20,6 +21,7 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
   donorName,
   donorEmail,
   donorPhone,
+  donorCpf,
   paymentMethod,
   onClose,
   onSuccess,
@@ -78,7 +80,9 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
     setLoading(true)
 
     try {
-      // Validar dados do cartão
+      let cardHash: string | undefined
+
+      // Validar dados do cartão e criar hash
       if (paymentMethod === 'credit_card') {
         if (!cardData.number || !cardData.holderName || !cardData.expirationDate || !cardData.cvv || !cardData.cpf) {
           throw new Error('Preencha todos os campos do cartão')
@@ -106,10 +110,36 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
         if (cpfClean.length !== 11) {
           throw new Error('CPF inválido')
         }
+
+        // Usar Pagar.me JS para criar hash do cartão (criptografia client-side)
+        try {
+          // @ts-ignore - pagarme global object
+          const pagarme = window.pagarme
+
+          if (!pagarme) {
+            throw new Error('Biblioteca Pagar.me não carregada')
+          }
+
+          // Criar cliente Pagar.me
+          const client = await pagarme.client.connect({ encryption_key: import.meta.env.VITE_PAGARME_ENCRYPTION_KEY })
+
+          // Criar card hash (criptografado no client-side)
+          cardHash = await client.security.encrypt({
+            card_number: cardNumberClean,
+            card_holder_name: cardData.holderName,
+            card_expiration_date: cardData.expirationDate.replace('/', ''),
+            card_cvv: cardData.cvv,
+          })
+
+          console.log('Card hash criado com sucesso')
+        } catch (error: any) {
+          console.error('Erro ao criar card hash:', error)
+          throw new Error('Erro ao processar dados do cartão')
+        }
       }
 
       // Chamar a API do Pagar.me
-      const response = await fetch('/.netlify/functions/process-pagarme-payment', {
+      const response = await fetch('/api/process-pagarme-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,23 +149,21 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
           donor_name: donorName,
           donor_email: donorEmail,
           donor_phone: donorPhone,
+          donor_cpf: donorCpf.replace(/\D/g, ''),
           payment_method: paymentMethod,
-          card_data: paymentMethod === 'credit_card' ? {
-            card_number: cardData.number.replace(/\s/g, ''),
-            card_holder_name: cardData.holderName,
-            card_expiration_date: cardData.expirationDate.replace('/', ''),
-            card_cvv: cardData.cvv,
-            card_holder_cpf: cardData.cpf.replace(/\D/g, ''),
-          } : undefined,
+          card_hash: cardHash,
+          card_holder_cpf: paymentMethod === 'credit_card' ? cardData.cpf.replace(/\D/g, '') : donorCpf.replace(/\D/g, ''),
         }),
       })
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.message || 'Erro ao processar pagamento')
+        console.error('Erro detalhado da API:', error)
+        throw new Error(error.error || error.message || 'Erro ao processar pagamento')
       }
 
       const result = await response.json()
+      console.log('Resultado do pagamento:', result)
 
       if (result.status === 'paid' || result.status === 'authorized') {
         onSuccess(result.transactionId)

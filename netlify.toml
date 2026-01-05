@@ -12,6 +12,16 @@
 # Disable all extensions to avoid network issues
 # No plugins configured to avoid network connectivity issues
 
+# Configuração de Funções
+[functions]
+  directory = "netlify/functions"
+
+# Redirecionamento para API
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
 # Redirecionamento para SPA React
 [[redirects]]
   from = "/*"

@@ -328,13 +328,13 @@
     "summary_method": "الطريقة",
     "secure_payment": "دفع آمن",
     "secure_payment_intl": "دفع آمن",
-    "mercadopago_info": "سيتم معالجة دفعك بشكل آمن بواسطة <strong>Mercado Pago</strong>، منصة الدفع الأكثر موثوقية في البرازيل.",
+    "mercadopago_info": "سيتم معالجة دفعك بشكل آمن بواسطة <strong>Pagar.me</strong>، منصة الدفع الموثوقة والمعتمدة.",
     "paypal_info": "سيتم معالجة دفعك بشكل آمن بواسطة <strong>PayPal</strong>، منصة الدفع الدولية الرائدة في العالم والموثوقة من قبل الملايين.",
     "how_it_works": "كيف يعمل:",
     "how_it_works_intl": "كيف يعمل:",
     "mercadopago_steps": {
-      "step1": "انقر على \"الدفع عبر Mercado Pago\"",
-      "step2": "سيتم توجيهك إلى صفحة Mercado Pago الآمنة",
+      "step1": "انقر على \"الدفع عبر Pagar.me\"",
+      "step2": "املأ بيانات الدفع في النموذج الآمن",
       "step3": "اختر طريقة الدفع المفضلة لديك (PIX أو البطاقة أو الحوالة)",
       "step4": "أكمل الدفع",
       "step5": "ستتلقى الإيصال عبر البريد الإلكتروني"

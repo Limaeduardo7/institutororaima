@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions'
 
 // Credenciais do Pagar.me
-const accessToken = 'acs_666666c500ac43dbadb8d89f3ecc6d253fcf9b084a68a6cb2ec691bdbbf5'
+const accessToken = 'sk_a00882ba2e4843ada095f07f0a737abf'
 const accountId = 'acc_nmoNbEeIAI3qbW9K' // ID da conta fornecido pelo usuário
 
 export const handler: Handler = async (event) => {
