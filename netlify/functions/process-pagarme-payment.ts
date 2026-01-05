@@ -168,8 +168,8 @@ export const handler: Handler = async (event) => {
     console.log('Transaction Data:', JSON.stringify(transactionData, null, 2))
 
     // Fazer requisição para API V5 do Pagar.me
-    // Access Token usa Bearer
-    const authHeader = `Bearer ${accessToken}`
+    // Usando Basic Auth (Chave de API : senha vazia)
+    const authHeader = `Basic ${Buffer.from(`${accessToken}:`).toString('base64')}`
 
     const apiResponse = await fetch('https://api.pagar.me/core/v5/orders', {
       method: 'POST',
