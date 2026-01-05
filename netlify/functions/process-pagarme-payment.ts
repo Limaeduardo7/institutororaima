@@ -1,8 +1,7 @@
 import { Handler } from '@netlify/functions'
 
 // Credenciais do Pagar.me
-const accessToken = process.env.PAGARME_ACCESS_TOKEN || ''
-const secretKey = process.env.PAGARME_SECRET_KEY || ''
+const accessToken = 'acs_666666c500ac43dbadb8d89f3ecc6d253fcf9b084a68a6cb2ec691bdbbf5'
 const accountId = 'acc_nmoNbEeIAI3qbW9K' // ID da conta fornecido pelo usuário
 
 export const handler: Handler = async (event) => {
@@ -33,10 +32,9 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    // Validar credenciais - priorizar Access Token
-    const authKey = accessToken || secretKey
-    if (!authKey) {
-      console.error('Access Token ou Secret Key não configurada')
+    // Validar credenciais
+    if (!accessToken) {
+      console.error('Access Token não configurado')
       throw new Error('Credenciais do Pagar.me não configuradas')
     }
 
@@ -168,13 +166,10 @@ export const handler: Handler = async (event) => {
 
     console.log('Enviando requisição para Pagar.me API V5...')
     console.log('Transaction Data:', JSON.stringify(transactionData, null, 2))
-    console.log('Usando autenticação:', accessToken ? 'Access Token (Bearer)' : 'Secret Key (Basic)')
 
     // Fazer requisição para API V5 do Pagar.me
-    // Access Token usa Bearer, Secret Key usa Basic Auth
-    const authHeader = accessToken
-      ? `Bearer ${accessToken}`
-      : `Basic ${Buffer.from(`${secretKey}:`).toString('base64')}`
+    // Access Token usa Bearer
+    const authHeader = `Bearer ${accessToken}`
 
     const apiResponse = await fetch('https://api.pagar.me/core/v5/orders', {
       method: 'POST',
