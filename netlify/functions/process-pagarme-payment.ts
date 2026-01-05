@@ -1,8 +1,9 @@
 import { Handler } from '@netlify/functions'
-import pagarme from 'pagarme'
 
 // Credenciais do Pagar.me
+const accessToken = process.env.PAGARME_ACCESS_TOKEN || ''
 const secretKey = process.env.PAGARME_SECRET_KEY || ''
+const accountId = 'acc_nmoNbEeIAI3qbW9K' // ID da conta fornecido pelo usuário
 
 export const handler: Handler = async (event) => {
   // Definir headers CORS
@@ -32,8 +33,10 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    // Validar credenciais
-    if (!secretKey) {
+    // Validar credenciais - priorizar Access Token
+    const authKey = accessToken || secretKey
+    if (!authKey) {
+      console.error('Access Token ou Secret Key não configurada')
       throw new Error('Credenciais do Pagar.me não configuradas')
     }
 
@@ -45,8 +48,11 @@ export const handler: Handler = async (event) => {
       donor_email,
       donor_phone,
       payment_method,
-      card_data,
+      card_hash,
+      card_holder_cpf,
     } = body
+
+    console.log('Processando pagamento:', { amount, payment_method, donor_email })
 
     // Validar dados obrigatórios
     if (!amount || amount <= 0) {
@@ -65,130 +71,167 @@ export const handler: Handler = async (event) => {
       }
     }
 
-    // Conectar ao Pagar.me
-    const client = await pagarme.client.connect({ api_key: secretKey })
-
     // Converter valor para centavos
     const amountInCents = Math.round(amount * 100)
 
-    // Preparar dados do cliente
-    const customer = {
-      external_id: donor_email,
-      name: donor_name || 'Doador Anônimo',
-      email: donor_email,
-      type: 'individual',
-      country: 'br',
-      phone_numbers: donor_phone ? [`+55${donor_phone.replace(/\D/g, '')}`] : [],
-      documents: [
+    // Extrair código de área e número do telefone
+    const phoneClean = donor_phone?.replace(/\D/g, '') || ''
+    const areaCode = phoneClean.slice(0, 2) || '95'
+    const phoneNumber = phoneClean.slice(2) || '00000000'
+
+    // Preparar payload para API V5 do Pagar.me seguindo estrutura oficial
+    const transactionData: any = {
+      closed: true,
+      customer: {
+        name: donor_name || 'Doador Anônimo',
+        email: donor_email,
+        type: 'individual',
+        document: card_holder_cpf || '00000000000',
+        document_type: 'CPF',
+        address: {
+          line_1: '1, Rua Principal, Centro',
+          line_2: 'Complemento',
+          zip_code: '69300000',
+          city: 'Boa Vista',
+          state: 'RR',
+          country: 'BR',
+        },
+        phones: {
+          home_phone: {
+            country_code: '55',
+            area_code: areaCode,
+            number: phoneNumber,
+          },
+          mobile_phone: {
+            country_code: '55',
+            area_code: areaCode,
+            number: phoneNumber,
+          },
+        },
+      },
+      items: [
         {
-          type: 'cpf',
-          number: payment_method === 'credit_card' && card_data ? card_data.card_holder_cpf : '00000000000',
+          amount: amountInCents,
+          description: 'Doação - Instituto Estação',
+          quantity: 1,
+          code: `DOA${Date.now()}`,
         },
       ],
+      metadata: {
+        donor_name: donor_name || 'Anônimo',
+        donor_phone: donor_phone || '',
+      },
     }
 
-    let transaction: any
-
-    // Processar de acordo com o método de pagamento
-    if (payment_method === 'credit_card' && card_data) {
-      // Processar pagamento com cartão de crédito
-      transaction = await client.transactions.create({
-        amount: amountInCents,
-        payment_method: 'credit_card',
-        card_number: card_data.card_number,
-        card_holder_name: card_data.card_holder_name,
-        card_expiration_date: card_data.card_expiration_date,
-        card_cvv: card_data.card_cvv,
-        customer,
-        billing: {
-          name: donor_name || 'Doador Anônimo',
-          address: {
-            country: 'br',
-            state: 'RR',
-            city: 'Boa Vista',
-            street: 'Rua não informada',
-            street_number: '0',
-            zipcode: '69000000',
+    // Adicionar dados específicos por método de pagamento
+    if (payment_method === 'credit_card' && card_hash) {
+      transactionData.payments = [
+        {
+          payment_method: 'credit_card',
+          credit_card: {
+            operation_type: 'auth_and_capture',
+            installments: 1,
+            statement_descriptor: 'Inst Estacao',
+            card_token: card_hash,
+            card: {
+              billing_address: {
+                line_1: '1, Rua Principal, Centro',
+                zip_code: '69300000',
+                city: 'Boa Vista',
+                state: 'RR',
+                country: 'BR',
+              },
+            },
           },
         },
-        items: [
-          {
-            id: '1',
-            title: 'Doação - Instituto Estação',
-            unit_price: amountInCents,
-            quantity: 1,
-            tangible: false,
-          },
-        ],
-        metadata: {
-          donor_name: donor_name || 'Anônimo',
-          donor_phone: donor_phone || '',
-        },
-      })
+      ]
     } else if (payment_method === 'pix') {
-      // Processar pagamento via PIX
-      transaction = await client.transactions.create({
-        amount: amountInCents,
-        payment_method: 'pix',
-        customer,
-        items: [
-          {
-            id: '1',
-            title: 'Doação - Instituto Estação',
-            unit_price: amountInCents,
-            quantity: 1,
-            tangible: false,
+      transactionData.payments = [
+        {
+          payment_method: 'pix',
+          pix: {
+            expires_in: 86400, // 24 horas
           },
-        ],
-        pix_expiration_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        metadata: {
-          donor_name: donor_name || 'Anônimo',
-          donor_phone: donor_phone || '',
         },
-      })
+      ]
     } else if (payment_method === 'boleto') {
-      // Processar pagamento via Boleto
-      transaction = await client.transactions.create({
-        amount: amountInCents,
-        payment_method: 'boleto',
-        customer,
-        items: [
-          {
-            id: '1',
-            title: 'Doação - Instituto Estação',
-            unit_price: amountInCents,
-            quantity: 1,
-            tangible: false,
+      transactionData.payments = [
+        {
+          payment_method: 'boleto',
+          boleto: {
+            instructions: 'Sr. Caixa, favor não aceitar pagamento após o vencimento',
+            due_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
           },
-        ],
-        boleto_expiration_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        metadata: {
-          donor_name: donor_name || 'Anônimo',
-          donor_phone: donor_phone || '',
         },
-      })
-    } else {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ message: 'Método de pagamento inválido' }),
-      }
+      ]
     }
 
-    // Preparar resposta
+    console.log('Enviando requisição para Pagar.me API V5...')
+    console.log('Transaction Data:', JSON.stringify(transactionData, null, 2))
+    console.log('Usando autenticação:', accessToken ? 'Access Token (Bearer)' : 'Secret Key (Basic)')
+
+    // Fazer requisição para API V5 do Pagar.me
+    // Access Token usa Bearer, Secret Key usa Basic Auth
+    const authHeader = accessToken
+      ? `Bearer ${accessToken}`
+      : `Basic ${Buffer.from(`${secretKey}:`).toString('base64')}`
+
+    const apiResponse = await fetch('https://api.pagar.me/core/v5/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authHeader,
+        'X-Pagarme-Account-Id': accountId,
+      },
+      body: JSON.stringify(transactionData),
+    })
+
+    const transaction = await apiResponse.json()
+
+    console.log('Resposta completa da API:', JSON.stringify(transaction, null, 2))
+    console.log('Status HTTP:', apiResponse.status)
+
+    if (!apiResponse.ok) {
+      console.error('Erro da API Pagar.me - Status:', apiResponse.status)
+      console.error('Erro da API Pagar.me - Body:', JSON.stringify(transaction, null, 2))
+
+      // Extrair mensagem de erro mais detalhada
+      let errorMessage = 'Erro ao processar pagamento'
+      if (transaction.errors && Array.isArray(transaction.errors) && transaction.errors.length > 0) {
+        errorMessage = transaction.errors.map((e: any) => `${e.parameter_name}: ${e.message}`).join(', ')
+      } else if (transaction.message) {
+        errorMessage = transaction.message
+      }
+
+      throw new Error(errorMessage)
+    }
+
+    // Preparar resposta (formato API V5)
     const response: any = {
-      transactionId: transaction.id.toString(),
+      transactionId: transaction.id,
       status: transaction.status,
       paymentMethod: payment_method,
     }
 
-    // Adicionar informações específicas do método de pagamento
-    if (payment_method === 'pix' && transaction.pix_qr_code) {
-      response.pixQrCode = transaction.pix_qr_code
-      response.pixQrCodeUrl = transaction.pix_qr_code_url
-    } else if (payment_method === 'boleto' && transaction.boleto_url) {
-      response.boletoUrl = transaction.boleto_url
-      response.boletoBarcode = transaction.boleto_barcode
+    // Adicionar informações específicas do método de pagamento (API V5)
+    if (payment_method === 'pix') {
+      // API V5: dados do PIX estão em charges[0].last_transaction.qr_code_url
+      const charge = transaction.charges?.[0]
+      const lastTransaction = charge?.last_transaction
+
+      if (lastTransaction?.qr_code) {
+        response.pixQrCode = lastTransaction.qr_code
+        response.pixQrCodeUrl = lastTransaction.qr_code_url
+      }
+    } else if (payment_method === 'boleto') {
+      // API V5: dados do boleto estão em charges[0].last_transaction
+      const charge = transaction.charges?.[0]
+      const lastTransaction = charge?.last_transaction
+
+      if (lastTransaction?.pdf) {
+        response.boletoUrl = lastTransaction.pdf
+        response.boletoBarcode = lastTransaction.line
+      }
     }
 
     return {
@@ -198,9 +241,10 @@ export const handler: Handler = async (event) => {
     }
   } catch (error: any) {
     console.error('Erro ao processar pagamento Pagar.me:', error)
+    console.error('Stack:', error.stack)
 
     // Retornar erro detalhado
-    const errorMessage = error.response?.errors?.[0]?.message || error.message || 'Erro desconhecido'
+    const errorMessage = error.message || 'Erro desconhecido'
 
     return {
       statusCode: 500,
@@ -208,7 +252,6 @@ export const handler: Handler = async (event) => {
       body: JSON.stringify({
         message: 'Erro ao processar pagamento',
         error: errorMessage,
-        details: error.response?.errors || [],
       }),
     }
   }
