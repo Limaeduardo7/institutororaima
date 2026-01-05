@@ -4,9 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
-import { processDonation } from '../lib/mercadoPagoService'
 import { processPagarmeDonation, savePagarmeDonation, type PagarmeDonationData } from '../lib/pagarmeService'
-import { processPayPalDonation, PAYPAL_CURRENCIES, formatCurrency } from '../lib/paypalService'
 import { PagarmeCheckout } from '../components/PagarmeCheckout'
 import {
   Heart,
@@ -35,14 +33,13 @@ const Doacoes: React.FC = () => {
   const [searchParams] = useSearchParams()
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [customAmount, setCustomAmount] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'boleto' | 'paypal' | null>(null)
-  const [paymentProvider, setPaymentProvider] = useState<'mercadopago' | 'pagarme'>('mercadopago')
-  const [isInternational, setIsInternational] = useState(false)
-  const [selectedCurrency, setSelectedCurrency] = useState<keyof typeof PAYPAL_CURRENCIES>('USD')
+  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'boleto' | null>(null)
+  const [paymentProvider] = useState<'pagarme'>('pagarme')
   const [donorInfo, setDonorInfo] = useState({
     name: '',
     email: '',
-    phone: ''
+    phone: '',
+    cpf: ''
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -102,13 +99,18 @@ const Doacoes: React.FC = () => {
     }
 
     if (amount < 1) {
-      setError(isInternational ? t('donations.error_minimum_amount_intl') : t('donations.error_minimum_amount'))
+      setError(t('donations.error_minimum_amount'))
       return
     }
 
-    // Validar email obrigatório para Pagar.me
-    if (paymentProvider === 'pagarme' && !donorInfo.email) {
-      setError('Email é obrigatório para doações via Pagar.me')
+    // Validar email e CPF obrigatórios
+    if (!donorInfo.email) {
+      setError('Email é obrigatório para doações')
+      return
+    }
+
+    if (!donorInfo.cpf || donorInfo.cpf.replace(/\D/g, '').length !== 11) {
+      setError('CPF válido é obrigatório para doações')
       return
     }
 
@@ -116,41 +118,19 @@ const Doacoes: React.FC = () => {
     setError(null)
 
     try {
-      if (paymentMethod === 'paypal') {
-        // Processar doação internacional via PayPal
-        await processPayPalDonation({
-          amount,
-          currency: selectedCurrency,
-          donor_name: donorInfo.name || undefined,
-          donor_email: donorInfo.email || undefined,
-          donor_phone: donorInfo.phone || undefined,
-        })
-      } else if (paymentProvider === 'pagarme') {
-        // Processar doação nacional via Pagar.me - abrir modal de checkout
-        const donationData: PagarmeDonationData = {
-          amount,
-          donor_name: donorInfo.name || 'Doador Anônimo',
-          donor_email: donorInfo.email,
-          donor_phone: donorInfo.phone || undefined,
-          payment_method: paymentMethod === 'card' ? 'credit_card' : paymentMethod as 'pix' | 'boleto' | 'credit_card',
-        }
-        setPagarmeData(donationData)
-        setShowPagarmeCheckout(true)
-        setLoading(false)
-        return
-      } else {
-        // Processar doação nacional via Mercado Pago
-        const checkoutUrl = await processDonation({
-          amount,
-          donor_name: donorInfo.name || undefined,
-          donor_email: donorInfo.email || undefined,
-          donor_phone: donorInfo.phone || undefined,
-          payment_method: paymentMethod
-        })
-
-        // Redirecionar para checkout do Mercado Pago
-        window.location.href = checkoutUrl
+      // Processar doação via Pagar.me - abrir modal de checkout
+      const donationData: PagarmeDonationData = {
+        amount,
+        donor_name: donorInfo.name || 'Doador Anônimo',
+        donor_email: donorInfo.email,
+        donor_phone: donorInfo.phone || undefined,
+        donor_cpf: donorInfo.cpf,
+        payment_method: paymentMethod === 'card' ? 'credit_card' : paymentMethod as 'pix' | 'boleto' | 'credit_card',
       }
+      setPagarmeData(donationData)
+      setShowPagarmeCheckout(true)
+      setLoading(false)
+      return
     } catch (error) {
       console.error('Failed to process donation:', error)
       setError(t('donations.error_processing'))
@@ -267,7 +247,7 @@ const Doacoes: React.FC = () => {
               setSelectedAmount(null)
               setCustomAmount('')
               setPaymentMethod(null)
-              setDonorInfo({ name: '', email: '', phone: '' })
+              setDonorInfo({ name: '', email: '', phone: '', cpf: '' })
             }}
             className="w-full"
           >
@@ -349,87 +329,7 @@ const Doacoes: React.FC = () => {
                 />
               </div>
 
-              {/* Donation Type Selection */}
-              <div className="mb-6">
-                <div className="flex gap-3">
-                  <Button
-                    variant={!isInternational ? 'primary' : 'outline'}
-                    onClick={() => {
-                      setIsInternational(false)
-                      setPaymentMethod(null)
-                    }}
-                    className="flex-1"
-                  >
-                    {t('donations.national')}
-                  </Button>
-                  <Button
-                    variant={isInternational ? 'primary' : 'outline'}
-                    onClick={() => {
-                      setIsInternational(true)
-                      setPaymentMethod('paypal')
-                    }}
-                    className="flex-1"
-                  >
-                    <Globe className="w-4 h-4 mr-2" />
-                    {t('donations.international')}
-                  </Button>
-                </div>
-              </div>
 
-              {/* Currency Selection (International only) */}
-              {isInternational && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3 text-gray-800">
-                    {t('donations.select_currency')}
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {Object.entries(PAYPAL_CURRENCIES).map(([code, info]) => (
-                      <Card
-                        key={code}
-                        variant={selectedCurrency === code ? 'elevated' : 'glass'}
-                        className={`p-3 cursor-pointer transition-all text-center ${
-                          selectedCurrency === code ? 'ring-2 ring-primary-500' : 'hover:scale-105'
-                        }`}
-                        onClick={() => setSelectedCurrency(code as keyof typeof PAYPAL_CURRENCIES)}
-                      >
-                        <div className="font-bold text-lg">{info.symbol}</div>
-                        <div className="text-xs text-gray-600">{code}</div>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Payment Provider Selection (National only) */}
-              {!isInternational && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3 text-gray-800">
-                    Escolha o processador de pagamento
-                  </h3>
-                  <div className="flex gap-3">
-                    <Button
-                      variant={paymentProvider === 'mercadopago' ? 'primary' : 'outline'}
-                      onClick={() => {
-                        setPaymentProvider('mercadopago')
-                        setPaymentMethod(null)
-                      }}
-                      className="flex-1"
-                    >
-                      Mercado Pago
-                    </Button>
-                    <Button
-                      variant={paymentProvider === 'pagarme' ? 'primary' : 'outline'}
-                      onClick={() => {
-                        setPaymentProvider('pagarme')
-                        setPaymentMethod(null)
-                      }}
-                      className="flex-1"
-                    >
-                      Pagar.me
-                    </Button>
-                  </div>
-                </div>
-              )}
 
               {/* Payment Methods */}
               <div className="mb-8">
@@ -438,80 +338,59 @@ const Doacoes: React.FC = () => {
                 </h3>
 
                 <div className="space-y-3">
-                  {isInternational ? (
-                    // PayPal (International Payment)
-                    <Card
-                      variant="elevated"
-                      className="p-4 ring-2 ring-primary-500"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <CreditCard className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-800">{t('donations.paypal_card')}</h4>
-                          <p className="text-sm text-gray-600">{t('donations.paypal_description')}</p>
-                        </div>
+                  <Card
+                    variant={paymentMethod === 'pix' ? 'elevated' : 'glass'}
+                    className={`p-4 cursor-pointer transition-all ${
+                      paymentMethod === 'pix' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                    }`}
+                    onClick={() => setPaymentMethod('pix')}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Smartphone className="w-5 h-5 text-green-600" />
                       </div>
-                    </Card>
-                  ) : (
-                    // National Payment Options
-                    <>
-                      <Card
-                        variant={paymentMethod === 'pix' ? 'elevated' : 'glass'}
-                        className={`p-4 cursor-pointer transition-all ${
-                          paymentMethod === 'pix' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
-                        }`}
-                        onClick={() => setPaymentMethod('pix')}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                            <Smartphone className="w-5 h-5 text-green-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-800">PIX</h4>
-                            <p className="text-sm text-gray-600">{t('donations.pix_description')}</p>
-                          </div>
-                        </div>
-                      </Card>
+                      <div>
+                        <h4 className="font-semibold text-gray-800">PIX</h4>
+                        <p className="text-sm text-gray-600">{t('donations.pix_description')}</p>
+                      </div>
+                    </div>
+                  </Card>
 
-                      <Card
-                        variant={paymentMethod === 'card' ? 'elevated' : 'glass'}
-                        className={`p-4 cursor-pointer transition-all ${
-                          paymentMethod === 'card' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
-                        }`}
-                        onClick={() => setPaymentMethod('card')}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <CreditCard className="w-5 h-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-800">Cartão de Crédito</h4>
-                            <p className="text-sm text-gray-600">{t('donations.card_description')}</p>
-                          </div>
-                        </div>
-                      </Card>
+                  <Card
+                    variant={paymentMethod === 'card' ? 'elevated' : 'glass'}
+                    className={`p-4 cursor-pointer transition-all ${
+                      paymentMethod === 'card' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                    }`}
+                    onClick={() => setPaymentMethod('card')}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <CreditCard className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-800">Cartão de Crédito</h4>
+                        <p className="text-sm text-gray-600">{t('donations.card_description')}</p>
+                      </div>
+                    </div>
+                  </Card>
 
-                      <Card
-                        variant={paymentMethod === 'boleto' ? 'elevated' : 'glass'}
-                        className={`p-4 cursor-pointer transition-all ${
-                          paymentMethod === 'boleto' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
-                        }`}
-                        onClick={() => setPaymentMethod('boleto')}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-orange-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-800">Boleto Bancário</h4>
-                            <p className="text-sm text-gray-600">{t('donations.boleto_description')}</p>
-                          </div>
-                        </div>
-                      </Card>
-                    </>
-                  )}
+                  <Card
+                    variant={paymentMethod === 'boleto' ? 'elevated' : 'glass'}
+                    className={`p-4 cursor-pointer transition-all ${
+                      paymentMethod === 'boleto' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                    }`}
+                    onClick={() => setPaymentMethod('boleto')}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-800">Boleto Bancário</h4>
+                        <p className="text-sm text-gray-600">{t('donations.boleto_description')}</p>
+                      </div>
+                    </div>
+                  </Card>
                 </div>
               </div>
 
@@ -540,6 +419,22 @@ const Doacoes: React.FC = () => {
                   onChange={(e) => setDonorInfo({...donorInfo, phone: e.target.value})}
                   variant="glass"
                 />
+                <Input
+                  label="CPF"
+                  type="text"
+                  value={donorInfo.cpf}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '')
+                    const formatted = value
+                      .replace(/(\d{3})(\d)/, '$1.$2')
+                      .replace(/(\d{3})(\d)/, '$1.$2')
+                      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+                      .slice(0, 14)
+                    setDonorInfo({...donorInfo, cpf: formatted})
+                  }}
+                  placeholder="000.000.000-00"
+                  variant="glass"
+                />
               </div>
             </div>
 
@@ -554,10 +449,7 @@ const Doacoes: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">{t('donations.summary_amount')}:</span>
                     <span className="text-2xl font-bold text-primary-800">
-                      {isInternational
-                        ? formatCurrency(getFinalAmount() || 0, selectedCurrency)
-                        : `R$ ${getFinalAmount() || 0}`
-                      }
+                      R$ {getFinalAmount() || 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -566,8 +458,7 @@ const Doacoes: React.FC = () => {
                       {paymentMethod === 'pix' ? t('donations.pix') :
                        paymentMethod === 'card' ? t('donations.card') :
                        paymentMethod === 'boleto' ? t('donations.boleto') :
-                       paymentMethod === 'paypal' ? t('donations.paypal_card') :
-                       isInternational ? t('donations.method_not_selected_intl') : t('donations.method_not_selected')}
+                       t('donations.method_not_selected')}
                     </span>
                   </div>
                 </div>
@@ -589,15 +480,7 @@ const Doacoes: React.FC = () => {
                     disabled={loading}
                   >
                     <Heart className="w-5 h-5 mr-2" />
-                    {loading
-                      ? t('donations.processing')
-                      : (isInternational
-                          ? t('donations.donate_paypal')
-                          : (paymentProvider === 'pagarme'
-                              ? 'Pagar com Pagar.me'
-                              : t('donations.donate_button'))
-                        )
-                    }
+                    {loading ? t('donations.processing') : 'Pagar com Pagar.me'}
                   </Button>
                 )}
               </Card>
@@ -606,43 +489,22 @@ const Doacoes: React.FC = () => {
               <Card variant="glass" className="p-6">
                 <h3 className="text-lg font-semibold mb-3 text-gray-800 flex items-center">
                   <Check className="w-5 h-5 mr-2 text-green-600" />
-                  {isInternational ? t('donations.secure_payment_intl') : t('donations.secure_payment')}
+                  {t('donations.secure_payment')}
                 </h3>
-                {isInternational ? (
-                  <>
-                    <div
-                      className="text-sm text-gray-600 leading-relaxed mb-4"
-                      dangerouslySetInnerHTML={{ __html: t('donations.paypal_info') }}
-                    />
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-blue-800 mb-2 text-sm">{t('donations.how_it_works_intl')}</h4>
-                      <ol className="text-sm text-blue-700 space-y-1">
-                        <li>1. {t('donations.paypal_steps.step1')}</li>
-                        <li>2. {t('donations.paypal_steps.step2')}</li>
-                        <li>3. {t('donations.paypal_steps.step3')}</li>
-                        <li>4. {t('donations.paypal_steps.step4')}</li>
-                        <li>5. {t('donations.paypal_steps.step5')}</li>
-                      </ol>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div
-                      className="text-sm text-gray-600 leading-relaxed mb-4"
-                      dangerouslySetInnerHTML={{ __html: t('donations.mercadopago_info') }}
-                    />
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-blue-800 mb-2 text-sm">{t('donations.how_it_works')}</h4>
-                      <ol className="text-sm text-blue-700 space-y-1">
-                        <li>1. {t('donations.mercadopago_steps.step1')}</li>
-                        <li>2. {t('donations.mercadopago_steps.step2')}</li>
-                        <li>3. {t('donations.mercadopago_steps.step3')}</li>
-                        <li>4. {t('donations.mercadopago_steps.step4')}</li>
-                        <li>5. {t('donations.mercadopago_steps.step5')}</li>
-                      </ol>
-                    </div>
-                  </>
-                )}
+                <div
+                  className="text-sm text-gray-600 leading-relaxed mb-4"
+                  dangerouslySetInnerHTML={{ __html: t('donations.mercadopago_info') }}
+                />
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2 text-sm">{t('donations.how_it_works')}</h4>
+                  <ol className="text-sm text-blue-700 space-y-1">
+                    <li>1. {t('donations.mercadopago_steps.step1')}</li>
+                    <li>2. {t('donations.mercadopago_steps.step2')}</li>
+                    <li>3. {t('donations.mercadopago_steps.step3')}</li>
+                    <li>4. {t('donations.mercadopago_steps.step4')}</li>
+                    <li>5. {t('donations.mercadopago_steps.step5')}</li>
+                  </ol>
+                </div>
               </Card>
 
               {/* Tax Deduction Info */}
@@ -972,6 +834,7 @@ const Doacoes: React.FC = () => {
           donorName={pagarmeData.donor_name || ''}
           donorEmail={pagarmeData.donor_email || ''}
           donorPhone={pagarmeData.donor_phone || ''}
+          donorCpf={pagarmeData.donor_cpf || ''}
           paymentMethod={pagarmeData.payment_method}
           onClose={() => {
             setShowPagarmeCheckout(false)
