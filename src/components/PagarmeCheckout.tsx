@@ -28,6 +28,37 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
   onError,
 }) => {
   const [loading, setLoading] = useState(false)
+  const [scriptLoaded, setScriptLoaded] = useState(false)
+
+  // Efeito para garantir que o script do Pagar.me está carregado
+  React.useEffect(() => {
+    const checkScript = () => {
+      const lib = (window as any).PagarMe || (window as any).pagarme
+      if (lib) {
+        setScriptLoaded(true)
+        return true
+      }
+      return false
+    }
+
+    if (checkScript()) return
+
+    // Se não estiver no window, tenta carregar dinamicamente
+    const script = document.createElement('script')
+    script.src = 'https://js.pagar.me/v5/'
+    script.async = true
+    script.onload = () => {
+      console.log('Pagar.me V5 script carregado com sucesso')
+      setTimeout(checkScript, 500) // Pequeno delay para inicialização
+    }
+    script.onerror = () => {
+      console.error('Falha ao carregar o script do Pagar.me')
+    }
+    document.head.appendChild(script)
+
+    const interval = setInterval(checkScript, 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   const [cardData, setCardData] = useState({
     number: '',
@@ -314,9 +345,15 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
                 type="submit"
                 className="flex-1"
                 loading={loading}
-                disabled={loading}
+                disabled={loading || (paymentMethod === 'credit_card' && !scriptLoaded)}
               >
-                {loading ? 'Processando...' : 'Confirmar Doação'}
+                {loading ? (
+                  'Processando...'
+                ) : paymentMethod === 'credit_card' && !scriptLoaded ? (
+                  'Carregando sistema de cartão...'
+                ) : (
+                  'Confirmar Doação'
+                )}
               </Button>
           </div>
         </form>
