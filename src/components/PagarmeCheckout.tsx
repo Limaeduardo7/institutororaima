@@ -37,6 +37,43 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
     cpf: '',
   })
 
+  // Ref para o formulário
+  const formRef = React.useRef<HTMLFormElement>(null)
+
+  // Efeito para inicializar o PagarmeCheckout.init() quando o form estiver pronto
+  React.useEffect(() => {
+    if (paymentMethod !== 'credit_card') return
+
+    const PagarmeCheckout = (window as any).PagarmeCheckout
+    if (PagarmeCheckout && formRef.current) {
+      console.log('Inicializando PagarmeCheckout interceptor...')
+      PagarmeCheckout.init((data: any) => {
+        // Callback de SUCESSO - Recebemos o token
+        console.log('Tokenização concluída com sucesso via interceptor:', data)
+        // O token vem no campo 'id' do objeto data, ou em 'pagarmetoken' no form
+        const token = data.id || (formRef.current?.elements as any).pagarmetoken?.value
+        
+        if (token) {
+          // Chamamos o processamento final enviando o token
+          processFinalPayment(token)
+        } else {
+          onError('Falha ao capturar token de segurança')
+          setLoading(false)
+        }
+        
+        // Retornar false para abortar o submit padrão do form
+        return false
+      }, (error: any) => {
+        // Callback de ERRO
+        console.error('Erro na tokenização via interceptor:', error)
+        const errorMsg = error.errors?.[0]?.message || 'Dados do cartão inválidos'
+        onError(errorMsg)
+        setLoading(false)
+        return false
+      })
+    }
+  }, [paymentMethod])
+
   const formatCardNumber = (value: string) => {
     return value
       .replace(/\s/g, '')
@@ -80,81 +117,20 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
     e.preventDefault()
     setLoading(true)
 
-    try {
-      let cardHash: string | undefined
-
-      // Validar dados do cartão e criar hash
-      if (paymentMethod === 'credit_card') {
-        if (!cardData.number || !cardData.holderName || !cardData.expirationDate || !cardData.cvv || !cardData.cpf) {
-          throw new Error('Preencha todos os campos do cartão')
-        }
-
-        const cardNumberClean = cardData.number.replace(/\s/g, '')
-        const [month, year] = cardData.expirationDate.split('/')
-        const cpfClean = cardData.cpf.replace(/\D/g, '')
-
-        // Usar PagarmeCheckout (do script tokenizecard.js)
-        const PagarmeCheckout = (window as any).PagarmeCheckout
-        
-        if (!PagarmeCheckout) {
-          console.error('Objeto PagarmeCheckout não encontrado no window')
-          throw new Error('O sistema de segurança do Pagar.me ainda está carregando. Por favor, aguarde alguns segundos e tente novamente.')
-        }
-
-        console.log('PagarmeCheckout encontrado. Métodos disponíveis:', Object.keys(PagarmeCheckout))
-
-        try {
-          // Criar objeto de cartão para o Pagar.me
-          const card = {
-            card_number: cardNumberClean,
-            card_holder_name: cardData.holderName,
-            card_expiration_month: month,
-            card_expiration_year: '20' + year,
-            card_cvv: cardData.cvv,
-          }
-
-          // Gerar o hash do cartão
-          cardHash = await new Promise((resolve, reject) => {
-            // Tentar os diferentes caminhos possíveis no PagarmeCheckout (V1 tokenizecard.js)
-            const tokenService = PagarmeCheckout.token || PagarmeCheckout
-            const createTokenMethod = tokenService.create || tokenService.createToken
-            
-            if (typeof createTokenMethod === 'function') {
-              // No PagarmeCheckout (V1), às vezes a chave deve ser passada como primeiro argumento ou estar no objeto
-              const encryptionKey = import.meta.env.VITE_PAGARME_PUBLIC_KEY
-              
-              // Tenta chamar o método (algumas versões esperam (key, card, callback), outras (card, callback))
-              try {
-                createTokenMethod.call(tokenService, card, (response: any) => {
-                  if (response.errors) {
-                    console.error('Erro na tokenização:', response.errors)
-                    reject(new Error(response.errors[0].message || 'Erro ao validar cartão'))
-                  } else {
-                    resolve(response.id)
-                  }
-                })
-              } catch (err) {
-                // Fallback para o formato (encryptionKey, card, callback)
-                createTokenMethod.call(tokenService, encryptionKey, card, (response: any) => {
-                  if (response.errors) {
-                    reject(new Error(response.errors[0].message || 'Erro ao validar cartão'))
-                  } else {
-                    resolve(response.id)
-                  }
-                })
-              }
-            } else {
-              console.error('Método de tokenização não encontrado em PagarmeCheckout. Chaves:', Object.keys(PagarmeCheckout))
-              reject(new Error('Falha ao inicializar biblioteca de segurança (método de tokenização não encontrado)'))
-            }
-          })
-
-          console.log('Card hash gerado com sucesso:', cardHash)
-        } catch (error: any) {
-          throw new Error('Erro ao processar dados do cartão: ' + (error.message || 'Verifique os dados'))
-        }
+    // Se for cartão, o PagarmeCheckout.init() vai interceptar o evento de submit
+    // e chamar o callback de sucesso. Se for PIX ou Boleto, processamos direto.
+    if (paymentMethod !== 'credit_card') {
+      try {
+        await processFinalPayment()
+      } catch (error: any) {
+        onError(error.message)
+        setLoading(false)
       }
+    }
+  }
 
+  const processFinalPayment = async (cardHash?: string) => {
+    try {
       // Chamar a API do Pagar.me
       const response = await fetch('/.netlify/functions/process-pagarme-payment', {
         method: 'POST',
@@ -168,45 +144,32 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
           donor_phone: donorPhone,
           donor_cpf: donorCpf.replace(/\D/g, ''),
           payment_method: paymentMethod,
-          card_hash: cardHash, // Enviando o hash gerado
+          card_hash: cardHash,
           card_holder_cpf: paymentMethod === 'credit_card' ? cardData.cpf.replace(/\D/g, '') : donorCpf.replace(/\D/g, ''),
         }),
       })
 
       if (!response.ok) {
         const error = await response.json()
-        console.error('Erro detalhado da API:', error)
         throw new Error(error.error || error.message || 'Erro ao processar pagamento')
       }
 
       const result = await response.json()
-      console.log('Resultado do pagamento:', result)
-
-      // Status válidos para sucesso:
-      // - paid: Cartão aprovado
-      // - authorized: Cartão autorizado (aguardando captura)
-      // - pending: PIX/Boleto aguardando pagamento (sucesso!)
-      // - waiting_payment: PIX/Boleto aguardando pagamento (sucesso!)
+      
       if (result.status === 'paid' || result.status === 'authorized') {
         onSuccess(result.transactionId, paymentMethod)
       } else if (result.status === 'pending' || result.status === 'waiting_payment') {
-        // Para PIX e Boleto - status pending/waiting_payment é SUCESSO
         if (result.pixQrCode) {
-          // Mostrar QR Code do PIX
           window.open(result.pixQrCodeUrl, '_blank')
         } else if (result.boletoUrl) {
-          // Abrir Boleto
           window.open(result.boletoUrl, '_blank')
         }
         onSuccess(result.transactionId, paymentMethod)
       } else {
-        // Status de falha: failed, refused, canceled, etc.
-        console.error('Status não aprovado:', result.status)
-        console.error('Detalhes:', result)
         throw new Error(`Pagamento ${result.status}: ${result.message || 'Status não aprovado'}`)
       }
     } catch (error: any) {
-      console.error('Erro no checkout Pagar.me:', error)
+      console.error('Erro no processamento final:', error)
       onError(error.message || 'Erro ao processar pagamento')
     } finally {
       setLoading(false)
@@ -232,7 +195,12 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form 
+          ref={formRef}
+          onSubmit={handleSubmit} 
+          className="space-y-4"
+          data-pagarmecheckout-form
+        >
           {paymentMethod === 'credit_card' ? (
             <>
               <Input
@@ -240,7 +208,7 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
                 value={cardData.number}
                 onChange={handleCardNumberChange}
                 placeholder="0000 0000 0000 0000"
-                data-pagarmecheckout-element="card_number"
+                data-pagarmecheckout-element="number"
               />
 
               <Input
@@ -248,7 +216,7 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
                 value={cardData.holderName}
                 onChange={(e) => setCardData({ ...cardData, holderName: e.target.value })}
                 placeholder="Como está no cartão"
-                data-pagarmecheckout-element="card_holder_name"
+                data-pagarmecheckout-element="holder_name"
               />
 
               <div className="grid grid-cols-2 gap-4">
@@ -257,7 +225,7 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
                   value={cardData.expirationDate}
                   onChange={handleExpirationDateChange}
                   placeholder="MM/AA"
-                  data-pagarmecheckout-element="card_expiration_date"
+                  data-pagarmecheckout-element="expiration_date"
                 />
                 <Input
                   label="CVV"
@@ -265,7 +233,7 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
                   value={cardData.cvv}
                   onChange={(e) => setCardData({ ...cardData, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) })}
                   placeholder="123"
-                  data-pagarmecheckout-element="card_cvv"
+                  data-pagarmecheckout-element="cvv"
                 />
               </div>
 
