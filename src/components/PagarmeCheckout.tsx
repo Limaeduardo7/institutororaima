@@ -28,16 +28,34 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
   onError,
 }) => {
   const [loading, setLoading] = useState(false)
-  const [scriptLoaded, setScriptLoaded] = React.useState(!!(window as any).PagarMe)
+  const [scriptLoaded, setScriptLoaded] = useState(false)
 
   React.useEffect(() => {
-    if (!(window as any).PagarMe) {
-      const script = document.createElement('script')
-      script.src = 'https://js.pagar.me/v5/'
-      script.async = true
-      script.onload = () => setScriptLoaded(true)
-      document.head.appendChild(script)
+    const checkScript = () => {
+      if ((window as any).PagarMe) {
+        setScriptLoaded(true)
+        return true
+      }
+      return false
     }
+
+    if (checkScript()) return
+
+    const script = document.createElement('script')
+    script.src = 'https://js.pagar.me/v5/'
+    script.async = true
+    script.onload = () => {
+      // Pequeno delay para garantir que o objeto global foi injetado
+      setTimeout(checkScript, 500)
+    }
+    document.head.appendChild(script)
+
+    // Intervalo de segurança para verificar se o script carregou (caso onload falhe)
+    const interval = setInterval(() => {
+      if (checkScript()) clearInterval(interval)
+    }, 1000)
+
+    return () => clearInterval(interval)
   }, [])
   const [cardData, setCardData] = useState({
     number: '',
