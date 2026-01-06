@@ -28,12 +28,12 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
   onError,
 }) => {
   const [loading, setLoading] = useState(false)
-  const [scriptLoaded, setScriptLoaded] = React.useState(!!(window as any).pagarme)
+  const [scriptLoaded, setScriptLoaded] = React.useState(!!(window as any).PagarMe)
 
   React.useEffect(() => {
-    if (!(window as any).pagarme) {
+    if (!(window as any).PagarMe) {
       const script = document.createElement('script')
-      script.src = 'https://assets.pagar.me/pagarme-js/4.11/pagarme.min.js'
+      script.src = 'https://js.pagar.me/v5/'
       script.async = true
       script.onload = () => setScriptLoaded(true)
       document.head.appendChild(script)
@@ -122,40 +122,38 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
           throw new Error('CPF inválido')
         }
 
-        // Usar Pagar.me JS para criar hash do cartão (criptografia client-side)
+        // Usar Pagar.me JS V5 para criar card token
         try {
-          // @ts-ignore - pagarme global object
-          let pagarme = (window as any).pagarme
+          // @ts-ignore - PagarMe global object from v5 script
+          const PagarMe = (window as any).PagarMe
 
-          if (!pagarme) {
-            console.log('Tentando detectar pagarme novamente...')
-            // @ts-ignore
-            pagarme = window.pagarme
+          if (!PagarMe) {
+            throw new Error('Biblioteca Pagar.me V5 não carregada. Por favor, recarregue a página.')
           }
 
-          if (!pagarme) {
-            console.error('Window object keys:', Object.keys(window))
-            throw new Error('Biblioteca Pagar.me não carregada. Por favor, recarregue a página.')
+          const [month, year] = cardData.expirationDate.split('/')
+          
+          // Inicializar PagarMe com a Public Key (pk_...)
+          const pagarme = PagarMe.init(import.meta.env.VITE_PAGARME_PUBLIC_KEY)
+          
+          // Tokenizar o cartão de forma segura
+          const cardToken = await pagarme.tokenizeCard({
+            number: cardNumberClean,
+            holder_name: cardData.holderName,
+            exp_month: parseInt(month),
+            exp_year: parseInt('20' + year), // Assume 20xx
+            cvv: cardData.cvv,
+          })
+
+          if (!cardToken || !cardToken.id) {
+            throw new Error('Falha ao gerar token do cartão')
           }
 
-          // Criar cliente Pagar.me com encryption key
-          const client = await pagarme.client.connect({
-            encryption_key: import.meta.env.VITE_PAGARME_PUBLIC_KEY
-          })
-
-          // Criar card token usando pagarme.js v4 (compatível com API V5)
-          const card = await client.cards.create({
-            card_number: cardNumberClean,
-            card_holder_name: cardData.holderName,
-            card_expiration_date: cardData.expirationDate.replace('/', ''),
-            card_cvv: cardData.cvv,
-          })
-
-          cardHash = card.id
+          cardHash = cardToken.id // No V5 usamos o ID do token como 'card_token'
           console.log('Card token criado com sucesso:', cardHash)
         } catch (error: any) {
           console.error('Erro ao criar card token:', error)
-          throw new Error('Erro ao processar dados do cartão: ' + (error.message || 'Erro desconhecido'))
+          throw new Error('Erro ao processar dados do cartão: ' + (error.message || 'Verifique os dados'))
         }
       }
 
