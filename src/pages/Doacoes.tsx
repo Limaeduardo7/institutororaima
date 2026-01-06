@@ -5,7 +5,9 @@ import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { processPagarmeDonation, savePagarmeDonation, type PagarmeDonationData } from '../lib/pagarmeService'
+import { processPayPalDonation, PAYPAL_CURRENCIES, formatCurrency, type PayPalDonationData } from '../lib/paypalService'
 import { PagarmeCheckout } from '../components/PagarmeCheckout'
+import { PaymentSuccess } from '../components/PaymentSuccess'
 import {
   Heart,
   CreditCard,
@@ -33,8 +35,10 @@ const Doacoes: React.FC = () => {
   const [searchParams] = useSearchParams()
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [customAmount, setCustomAmount] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'boleto' | null>(null)
-  const [paymentProvider] = useState<'pagarme'>('pagarme')
+  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'boleto' | 'paypal' | null>(null)
+  const [paymentProvider, setPaymentProvider] = useState<'pagarme' | 'paypal'>('pagarme')
+  const [selectedCurrency, setSelectedCurrency] = useState<keyof typeof PAYPAL_CURRENCIES>('USD')
+  const [isInternational, setIsInternational] = useState(false)
   const [donorInfo, setDonorInfo] = useState({
     name: '',
     email: '',
@@ -49,6 +53,8 @@ const Doacoes: React.FC = () => {
   const [showPagarmeCheckout, setShowPagarmeCheckout] = useState(false)
   const [pagarmeData, setPagarmeData] = useState<PagarmeDonationData | null>(null)
   const [showBankTransfer, setShowBankTransfer] = useState(false)
+  const [transactionId, setTransactionId] = useState<string | null>(null)
+  const [successPaymentMethod, setSuccessPaymentMethod] = useState<'pix' | 'credit_card' | 'boleto' | null>(null)
 
   // Verificar status do pagamento ao retornar do Mercado Pago
   useEffect(() => {
@@ -103,13 +109,14 @@ const Doacoes: React.FC = () => {
       return
     }
 
-    // Validar email e CPF obrigatórios
+    // Validar email obrigatório
     if (!donorInfo.email) {
       setError('Email é obrigatório para doações')
       return
     }
 
-    if (!donorInfo.cpf || donorInfo.cpf.replace(/\D/g, '').length !== 11) {
+    // Validar CPF apenas para Pagar.me (pagamentos nacionais)
+    if (paymentMethod !== 'paypal' && (!donorInfo.cpf || donorInfo.cpf.replace(/\D/g, '').length !== 11)) {
       setError('CPF válido é obrigatório para doações')
       return
     }
@@ -118,6 +125,21 @@ const Doacoes: React.FC = () => {
     setError(null)
 
     try {
+      // Processar doação via PayPal (internacional)
+      if (paymentMethod === 'paypal') {
+        const paypalData: PayPalDonationData = {
+          amount,
+          currency: selectedCurrency,
+          donor_name: donorInfo.name || 'Doador Anônimo',
+          donor_email: donorInfo.email,
+          donor_phone: donorInfo.phone || undefined,
+        }
+
+        // Processar e redirecionar para PayPal
+        await processPayPalDonation(paypalData)
+        return
+      }
+
       // Processar doação via Pagar.me - abrir modal de checkout
       const donationData: PagarmeDonationData = {
         amount,
@@ -228,33 +250,25 @@ const Doacoes: React.FC = () => {
     }
   ]
 
-  if (success) {
+  if (success && transactionId && successPaymentMethod && pagarmeData) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <Card variant="glass" className="max-w-md w-full text-center p-8">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="w-10 h-10 text-green-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            {t('donations.thank_you')}
-          </h2>
-          <p className="text-gray-600 mb-6">
-            {t('donations.thank_you_message')}
-          </p>
-          <Button
-            onClick={() => {
-              setSuccess(false)
-              setSelectedAmount(null)
-              setCustomAmount('')
-              setPaymentMethod(null)
-              setDonorInfo({ name: '', email: '', phone: '', cpf: '' })
-            }}
-            className="w-full"
-          >
-            {t('donations.new_donation')}
-          </Button>
-        </Card>
-      </div>
+      <PaymentSuccess
+        amount={pagarmeData.amount}
+        transactionId={transactionId}
+        paymentMethod={successPaymentMethod}
+        donorName={pagarmeData.donor_name || 'Doador Anônimo'}
+        donorEmail={pagarmeData.donor_email || ''}
+        onNewDonation={() => {
+          setSuccess(false)
+          setTransactionId(null)
+          setSuccessPaymentMethod(null)
+          setSelectedAmount(null)
+          setCustomAmount('')
+          setPaymentMethod(null)
+          setPagarmeData(null)
+          setDonorInfo({ name: '', email: '', phone: '', cpf: '' })
+        }}
+      />
     )
   }
 
@@ -391,8 +405,50 @@ const Doacoes: React.FC = () => {
                       </div>
                     </div>
                   </Card>
+
+                  <Card
+                    variant={paymentMethod === 'paypal' ? 'elevated' : 'glass'}
+                    className={`p-4 cursor-pointer transition-all ${
+                      paymentMethod === 'paypal' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                    }`}
+                    onClick={() => {
+                      setPaymentMethod('paypal')
+                      setIsInternational(true)
+                    }}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Globe className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-800">PayPal</h4>
+                        <p className="text-sm text-gray-600">Pagamento internacional seguro</p>
+                      </div>
+                    </div>
+                  </Card>
                 </div>
               </div>
+
+              {/* Currency Selection for PayPal */}
+              {paymentMethod === 'paypal' && (
+                <div className="mb-8">
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800">
+                    Moeda
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {Object.entries(PAYPAL_CURRENCIES).map(([code, info]) => (
+                      <Button
+                        key={code}
+                        variant={selectedCurrency === code ? 'primary' : 'outline'}
+                        onClick={() => setSelectedCurrency(code as keyof typeof PAYPAL_CURRENCIES)}
+                        className="h-12"
+                      >
+                        {info.symbol} {code}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Donor Information */}
               <div className="space-y-4">
@@ -419,22 +475,24 @@ const Doacoes: React.FC = () => {
                   onChange={(e) => setDonorInfo({...donorInfo, phone: e.target.value})}
                   variant="glass"
                 />
-                <Input
-                  label="CPF"
-                  type="text"
-                  value={donorInfo.cpf}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '')
-                    const formatted = value
-                      .replace(/(\d{3})(\d)/, '$1.$2')
-                      .replace(/(\d{3})(\d)/, '$1.$2')
-                      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-                      .slice(0, 14)
-                    setDonorInfo({...donorInfo, cpf: formatted})
-                  }}
-                  placeholder="000.000.000-00"
-                  variant="glass"
-                />
+                {paymentMethod !== 'paypal' && (
+                  <Input
+                    label="CPF"
+                    type="text"
+                    value={donorInfo.cpf}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '')
+                      const formatted = value
+                        .replace(/(\d{3})(\d)/, '$1.$2')
+                        .replace(/(\d{3})(\d)/, '$1.$2')
+                        .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+                        .slice(0, 14)
+                      setDonorInfo({...donorInfo, cpf: formatted})
+                    }}
+                    placeholder="000.000.000-00"
+                    variant="glass"
+                  />
+                )}
               </div>
             </div>
 
@@ -840,11 +898,12 @@ const Doacoes: React.FC = () => {
             setShowPagarmeCheckout(false)
             setPagarmeData(null)
           }}
-          onSuccess={async (transactionId) => {
+          onSuccess={async (txId, method) => {
             // Salvar doação no banco
-            await savePagarmeDonation(pagarmeData, transactionId)
+            await savePagarmeDonation(pagarmeData, txId)
             setShowPagarmeCheckout(false)
-            setPagarmeData(null)
+            setTransactionId(txId)
+            setSuccessPaymentMethod(method)
             setSuccess(true)
           }}
           onError={(errorMessage) => {

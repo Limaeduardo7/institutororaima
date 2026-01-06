@@ -185,7 +185,7 @@ export const handler: Handler = async (event) => {
 
     const transaction = await apiResponse.json()
 
-    console.log('Resposta completa da API:', JSON.stringify(transaction, null, 2))
+    console.log('PAGARME_RESPONSE:', JSON.stringify(transaction, null, 2))
     console.log('Status HTTP:', apiResponse.status)
 
     if (!apiResponse.ok) {
@@ -200,7 +200,21 @@ export const handler: Handler = async (event) => {
         errorMessage = transaction.message
       }
 
-      throw new Error(errorMessage)
+      return {
+        statusCode: 402,
+        headers,
+        body: JSON.stringify({
+          message: 'Pagamento não foi aprovado',
+          status: transaction?.status,
+          charges: transaction?.charges?.map((c: any) => ({
+            status: c.status,
+            last_transaction: c.last_transaction,
+            gateway_response: c.last_transaction?.gateway_response,
+            acquirer_message: c.last_transaction?.acquirer_message,
+          })),
+          raw_error: errorMessage,
+        }),
+      }
     }
 
     // Preparar resposta (formato API V5)
