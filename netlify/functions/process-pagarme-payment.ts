@@ -46,7 +46,7 @@ export const handler: Handler = async (event) => {
       donor_email,
       donor_phone,
       payment_method,
-      card_info, // Recebendo dados brutos do cartão
+      card_hash,
       card_holder_cpf,
     } = body
 
@@ -122,7 +122,7 @@ export const handler: Handler = async (event) => {
     }
 
     // Adicionar dados específicos por método de pagamento
-    if (payment_method === 'credit_card' && card_info) {
+    if (payment_method === 'credit_card' && card_hash) {
       transactionData.payments = [
         {
           payment_method: 'credit_card',
@@ -130,12 +130,8 @@ export const handler: Handler = async (event) => {
             operation_type: 'auth_and_capture',
             installments: 1,
             statement_descriptor: 'Inst Estacao',
+            card_id: card_hash, // No Pagar.me V5, o token gerado pelo tokenizecard.js entra como card_id
             card: {
-              number: card_info.number,
-              holder_name: card_info.holder_name,
-              exp_month: card_info.exp_month,
-              exp_year: card_info.exp_year,
-              cvv: card_info.cvv,
               billing_address: {
                 line_1: '1, Rua Principal, Centro',
                 zip_code: '69300000',

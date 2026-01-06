@@ -81,36 +81,50 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
     setLoading(true)
 
     try {
-      let cardInfo: any = undefined
+      let cardHash: string | undefined
 
-      // Validar dados do cartão
+      // Validar dados do cartão e criar hash
       if (paymentMethod === 'credit_card') {
         if (!cardData.number || !cardData.holderName || !cardData.expirationDate || !cardData.cvv || !cardData.cpf) {
           throw new Error('Preencha todos os campos do cartão')
         }
 
         const cardNumberClean = cardData.number.replace(/\s/g, '')
-        if (cardNumberClean.length < 13 || cardNumberClean.length > 16) {
-          throw new Error('Número do cartão inválido')
-        }
-
         const [month, year] = cardData.expirationDate.split('/')
-        if (!month || !year || parseInt(month) < 1 || parseInt(month) > 12) {
-          throw new Error('Data de expiração inválida')
-        }
-
         const cpfClean = cardData.cpf.replace(/\D/g, '')
-        if (cpfClean.length !== 11) {
-          throw new Error('CPF inválido')
+
+        // Usar PagarmeCheckout para criar o hash (tokenização no front)
+        const PagarmeCheckout = (window as any).PagarmeCheckout
+        
+        if (!PagarmeCheckout) {
+          throw new Error('O sistema de segurança do Pagar.me ainda está carregando. Por favor, aguarde alguns segundos e tente novamente.')
         }
 
-        // Passar os dados brutos para o backend (o backend cuidará da segurança via sk_key)
-        cardInfo = {
-          number: cardNumberClean,
-          holder_name: cardData.holderName,
-          exp_month: parseInt(month),
-          exp_year: parseInt('20' + year),
-          cvv: cardData.cvv,
+        try {
+          // Criar objeto de cartão para o PagarmeCheckout
+          const card = {
+            card_number: cardNumberClean,
+            card_holder_name: cardData.holderName,
+            card_expiration_month: month,
+            card_expiration_year: '20' + year,
+            card_cvv: cardData.cvv,
+          }
+
+          // Gerar o hash do cartão
+          cardHash = await new Promise((resolve, reject) => {
+            PagarmeCheckout.createToken(card, (response: any) => {
+              if (response.errors) {
+                console.error('Erro na tokenização:', response.errors)
+                reject(new Error(response.errors[0].message || 'Erro ao validar cartão'))
+              } else {
+                resolve(response.id)
+              }
+            })
+          })
+
+          console.log('Card hash gerado com sucesso:', cardHash)
+        } catch (error: any) {
+          throw new Error('Erro ao processar dados do cartão: ' + (error.message || 'Verifique os dados'))
         }
       }
 
@@ -127,7 +141,7 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
           donor_phone: donorPhone,
           donor_cpf: donorCpf.replace(/\D/g, ''),
           payment_method: paymentMethod,
-          card_info: cardInfo,
+          card_hash: cardHash, // Enviando o hash gerado
           card_holder_cpf: paymentMethod === 'credit_card' ? cardData.cpf.replace(/\D/g, '') : donorCpf.replace(/\D/g, ''),
         }),
       })

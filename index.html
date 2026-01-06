@@ -6,17 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Instituto Estação - Transformando Vidas em Roraima</title>
     <meta name="description" content="Instituto Estação - 27 anos transformando vidas em Roraima através de ações sociais, educação e desenvolvimento comunitário." />
-    <script src="https://js.pagar.me/v5/"></script>
-    <script>
-      window.addEventListener('load', function() {
-        console.log('Window loaded, checking Pagar.me...');
-        console.log('PagarMe object:', !!window.PagarMe);
-        console.log('pagarme object:', !!window.pagarme);
-      });
-    </script>
   </head>
   <body>
     <div id="root"></div>
+    <script 
+      src="https://checkout.pagar.me/v1/tokenizecard.js" 
+      data-pagarmecheckout-app-id="pk_1yezOpUM9TQKqBMp"
+    ></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
