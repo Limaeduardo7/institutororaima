@@ -28,35 +28,7 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
   onError,
 }) => {
   const [loading, setLoading] = useState(false)
-  const [scriptLoaded, setScriptLoaded] = useState(false)
 
-  React.useEffect(() => {
-    const checkScript = () => {
-      if ((window as any).PagarMe) {
-        setScriptLoaded(true)
-        return true
-      }
-      return false
-    }
-
-    if (checkScript()) return
-
-    const script = document.createElement('script')
-    script.src = 'https://js.pagar.me/v5/'
-    script.async = true
-    script.onload = () => {
-      // Pequeno delay para garantir que o objeto global foi injetado
-      setTimeout(checkScript, 500)
-    }
-    document.head.appendChild(script)
-
-    // Intervalo de segurança para verificar se o script carregou (caso onload falhe)
-    const interval = setInterval(() => {
-      if (checkScript()) clearInterval(interval)
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [])
   const [cardData, setCardData] = useState({
     number: '',
     holderName: '',
@@ -323,14 +295,13 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
               Cancelar
             </Button>
             <Button
-              type="submit"
-              variant="primary"
-              className="flex-1"
-              loading={loading}
-              disabled={loading || !scriptLoaded}
-            >
-              {loading ? 'Processando...' : !scriptLoaded ? 'Carregando sistema...' : 'Confirmar Doação'}
-            </Button>
+                type="submit"
+                className="flex-1"
+                loading={loading}
+                disabled={loading}
+              >
+                {loading ? 'Processando...' : 'Confirmar Doação'}
+              </Button>
           </div>
         </form>
       </Card>
