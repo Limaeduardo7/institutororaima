@@ -28,6 +28,17 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
   onError,
 }) => {
   const [loading, setLoading] = useState(false)
+  const [scriptLoaded, setScriptLoaded] = React.useState(!!(window as any).pagarme)
+
+  React.useEffect(() => {
+    if (!(window as any).pagarme) {
+      const script = document.createElement('script')
+      script.src = 'https://assets.pagar.me/pagarme-js/4.11/pagarme.min.js'
+      script.async = true
+      script.onload = () => setScriptLoaded(true)
+      document.head.appendChild(script)
+    }
+  }, [])
   const [cardData, setCardData] = useState({
     number: '',
     holderName: '',
@@ -114,27 +125,37 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
         // Usar Pagar.me JS para criar hash do cartão (criptografia client-side)
         try {
           // @ts-ignore - pagarme global object
-          const pagarme = window.pagarme
+          let pagarme = (window as any).pagarme
 
           if (!pagarme) {
-            throw new Error('Biblioteca Pagar.me não carregada')
+            console.log('Tentando detectar pagarme novamente...')
+            // @ts-ignore
+            pagarme = window.pagarme
           }
 
-          // Criar cliente Pagar.me
-          const client = await pagarme.client.connect({ encryption_key: import.meta.env.VITE_PAGARME_PUBLIC_KEY })
+          if (!pagarme) {
+            console.error('Window object keys:', Object.keys(window))
+            throw new Error('Biblioteca Pagar.me não carregada. Por favor, recarregue a página.')
+          }
 
-          // Criar card hash (criptografado no client-side)
-          cardHash = await client.security.encrypt({
+          // Criar cliente Pagar.me com encryption key
+          const client = await pagarme.client.connect({
+            encryption_key: import.meta.env.VITE_PAGARME_PUBLIC_KEY
+          })
+
+          // Criar card token usando pagarme.js v4 (compatível com API V5)
+          const card = await client.cards.create({
             card_number: cardNumberClean,
             card_holder_name: cardData.holderName,
             card_expiration_date: cardData.expirationDate.replace('/', ''),
             card_cvv: cardData.cvv,
           })
 
-          console.log('Card hash criado com sucesso')
+          cardHash = card.id
+          console.log('Card token criado com sucesso:', cardHash)
         } catch (error: any) {
-          console.error('Erro ao criar card hash:', error)
-          throw new Error('Erro ao processar dados do cartão')
+          console.error('Erro ao criar card token:', error)
+          throw new Error('Erro ao processar dados do cartão: ' + (error.message || 'Erro desconhecido'))
         }
       }
 
@@ -290,9 +311,9 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
               variant="primary"
               className="flex-1"
               loading={loading}
-              disabled={loading}
+              disabled={loading || !scriptLoaded}
             >
-              {loading ? 'Processando...' : 'Pagar'}
+              {loading ? 'Processando...' : !scriptLoaded ? 'Carregando sistema...' : 'Confirmar Doação'}
             </Button>
           </div>
         </form>
