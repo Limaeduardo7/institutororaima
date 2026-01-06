@@ -93,15 +93,20 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
         const [month, year] = cardData.expirationDate.split('/')
         const cpfClean = cardData.cpf.replace(/\D/g, '')
 
-        // Usar PagarmeCheckout para criar o hash (tokenização no front)
-        const PagarmeCheckout = (window as any).PagarmeCheckout
+        // Usar Pagar.me V1 para criar o hash (tokenização no front)
+        const PagarMe = (window as any).PagarMe || (window as any).PagarmeCheckout || (window as any).pagarme
         
-        if (!PagarmeCheckout) {
+        if (!PagarMe) {
           throw new Error('O sistema de segurança do Pagar.me ainda está carregando. Por favor, aguarde alguns segundos e tente novamente.')
         }
 
+        // Garantir que a chave de criptografia está definida (caso o script não tenha pegado do data-attribute)
+        if (!PagarMe.encryption_key) {
+          PagarMe.encryption_key = import.meta.env.VITE_PAGARME_PUBLIC_KEY
+        }
+
         try {
-          // Criar objeto de cartão para o PagarmeCheckout
+          // Criar objeto de cartão para o Pagar.me
           const card = {
             card_number: cardNumberClean,
             card_holder_name: cardData.holderName,
@@ -112,14 +117,23 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
 
           // Gerar o hash do cartão
           cardHash = await new Promise((resolve, reject) => {
-            PagarmeCheckout.createToken(card, (response: any) => {
-              if (response.errors) {
-                console.error('Erro na tokenização:', response.errors)
-                reject(new Error(response.errors[0].message || 'Erro ao validar cartão'))
-              } else {
-                resolve(response.id)
-              }
-            })
+            // Tenta usar createToken que é o método padrão da V1
+            const createTokenMethod = PagarMe.createToken || (PagarMe.token && PagarMe.token.create)
+            
+            if (typeof createTokenMethod === 'function') {
+              createTokenMethod(card, (response: any) => {
+                if (response.errors) {
+                  console.error('Erro na tokenização:', response.errors)
+                  reject(new Error(response.errors[0].message || 'Erro ao validar cartão'))
+                } else {
+                  resolve(response.id)
+                }
+              })
+            } else {
+              // Se não encontrar o método direto, tenta inicializar via Checkout se disponível
+              console.warn('Método createToken não encontrado diretamente. Tentando fallback...')
+              reject(new Error('Falha ao inicializar biblioteca de segurança (método não encontrado)'))
+            }
           })
 
           console.log('Card hash gerado com sucesso:', cardHash)
@@ -213,29 +227,32 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
                 value={cardData.number}
                 onChange={handleCardNumberChange}
                 placeholder="0000 0000 0000 0000"
+                data-pagarmecheckout-element="card_number"
               />
 
               <Input
                 label="Nome no Cartão"
                 value={cardData.holderName}
-                onChange={(e) => setCardData({ ...cardData, holderName: e.target.value.toUpperCase() })}
-                placeholder="NOME COMO NO CARTÃO"
+                onChange={(e) => setCardData({ ...cardData, holderName: e.target.value })}
+                placeholder="Como está no cartão"
+                data-pagarmecheckout-element="card_holder_name"
               />
 
               <div className="grid grid-cols-2 gap-4">
                 <Input
-                  label="Validade"
+                  label="Expiração"
                   value={cardData.expirationDate}
                   onChange={handleExpirationDateChange}
                   placeholder="MM/AA"
+                  data-pagarmecheckout-element="card_expiration_date"
                 />
-
                 <Input
                   label="CVV"
                   type="password"
                   value={cardData.cvv}
                   onChange={(e) => setCardData({ ...cardData, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) })}
                   placeholder="123"
+                  data-pagarmecheckout-element="card_cvv"
                 />
               </div>
 
