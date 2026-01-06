@@ -114,26 +114,42 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
 
         // Usar Pagar.me JS V5 para criar card token
         try {
-          // @ts-ignore - PagarMe global object from v5 script
-          const PagarMe = (window as any).PagarMe
+          // Tentar detectar o objeto global de várias formas
+          const PagarMe = (window as any).PagarMe || (window as any).pagarme
 
           if (!PagarMe) {
-            throw new Error('Biblioteca Pagar.me V5 não carregada. Por favor, recarregue a página.')
+            console.error('Pagar.me V5 não encontrado no window. Objetos disponíveis:', Object.keys(window).filter(k => k.toLowerCase().includes('pagar')))
+            throw new Error('O sistema de pagamento ainda está carregando. Por favor, aguarde 2 segundos e tente novamente.')
           }
 
           const [month, year] = cardData.expirationDate.split('/')
           
           // Inicializar PagarMe com a Public Key (pk_...)
-          const pagarme = PagarMe.init(import.meta.env.VITE_PAGARME_PUBLIC_KEY)
+          // Se for V5, geralmente usamos PagarMe.init ou direto o objeto
+          let cardToken;
           
-          // Tokenizar o cartão de forma segura
-          const cardToken = await pagarme.tokenizeCard({
-            number: cardNumberClean,
-            holder_name: cardData.holderName,
-            exp_month: parseInt(month),
-            exp_year: parseInt('20' + year), // Assume 20xx
-            cvv: cardData.cvv,
-          })
+          if (typeof PagarMe.init === 'function') {
+            const instance = PagarMe.init(import.meta.env.VITE_PAGARME_PUBLIC_KEY)
+            cardToken = await instance.tokenizeCard({
+              number: cardNumberClean,
+              holder_name: cardData.holderName,
+              exp_month: parseInt(month),
+              exp_year: parseInt('20' + year),
+              cvv: cardData.cvv,
+            })
+          } else {
+            // Fallback para outras versões do Pagar.me JS
+            cardToken = await PagarMe.tokenizeCard(
+              import.meta.env.VITE_PAGARME_PUBLIC_KEY,
+              {
+                number: cardNumberClean,
+                holder_name: cardData.holderName,
+                exp_month: parseInt(month),
+                exp_year: parseInt('20' + year),
+                cvv: cardData.cvv,
+              }
+            )
+          }
 
           if (!cardToken || !cardToken.id) {
             throw new Error('Falha ao gerar token do cartão')
