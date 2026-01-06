@@ -28,37 +28,6 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
   onError,
 }) => {
   const [loading, setLoading] = useState(false)
-  const [scriptLoaded, setScriptLoaded] = useState(false)
-
-  // Efeito para garantir que o script do Pagar.me está carregado
-  React.useEffect(() => {
-    const checkScript = () => {
-      const lib = (window as any).PagarMe || (window as any).pagarme
-      if (lib) {
-        setScriptLoaded(true)
-        return true
-      }
-      return false
-    }
-
-    if (checkScript()) return
-
-    // Se não estiver no window, tenta carregar dinamicamente
-    const script = document.createElement('script')
-    script.src = 'https://js.pagar.me/v5/'
-    script.async = true
-    script.onload = () => {
-      console.log('Pagar.me V5 script carregado com sucesso')
-      setTimeout(checkScript, 500) // Pequeno delay para inicialização
-    }
-    script.onerror = () => {
-      console.error('Falha ao carregar o script do Pagar.me')
-    }
-    document.head.appendChild(script)
-
-    const interval = setInterval(checkScript, 1000)
-    return () => clearInterval(interval)
-  }, [])
 
   const [cardData, setCardData] = useState({
     number: '',
@@ -112,85 +81,36 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
     setLoading(true)
 
     try {
-      let cardHash: string | undefined
+      let cardInfo: any = undefined
 
-      // Validar dados do cartão e criar hash
+      // Validar dados do cartão
       if (paymentMethod === 'credit_card') {
         if (!cardData.number || !cardData.holderName || !cardData.expirationDate || !cardData.cvv || !cardData.cpf) {
           throw new Error('Preencha todos os campos do cartão')
         }
 
-        // Validar número do cartão (deve ter 16 dígitos)
         const cardNumberClean = cardData.number.replace(/\s/g, '')
         if (cardNumberClean.length < 13 || cardNumberClean.length > 16) {
           throw new Error('Número do cartão inválido')
         }
 
-        // Validar data de expiração
         const [month, year] = cardData.expirationDate.split('/')
         if (!month || !year || parseInt(month) < 1 || parseInt(month) > 12) {
           throw new Error('Data de expiração inválida')
         }
 
-        // Validar CVV
-        if (cardData.cvv.length < 3 || cardData.cvv.length > 4) {
-          throw new Error('CVV inválido')
-        }
-
-        // Validar CPF
         const cpfClean = cardData.cpf.replace(/\D/g, '')
         if (cpfClean.length !== 11) {
           throw new Error('CPF inválido')
         }
 
-        // Usar Pagar.me JS V5 para criar card token
-        try {
-          // Tentar detectar o objeto global de várias formas
-          const PagarMe = (window as any).PagarMe || (window as any).pagarme
-
-          if (!PagarMe) {
-            console.error('Pagar.me V5 não encontrado no window. Objetos disponíveis:', Object.keys(window).filter(k => k.toLowerCase().includes('pagar')))
-            throw new Error('O sistema de pagamento ainda está carregando. Por favor, aguarde 2 segundos e tente novamente.')
-          }
-
-          const [month, year] = cardData.expirationDate.split('/')
-          
-          // Inicializar PagarMe com a Public Key (pk_...)
-          // Se for V5, geralmente usamos PagarMe.init ou direto o objeto
-          let cardToken;
-          
-          if (typeof PagarMe.init === 'function') {
-            const instance = PagarMe.init(import.meta.env.VITE_PAGARME_PUBLIC_KEY)
-            cardToken = await instance.tokenizeCard({
-              number: cardNumberClean,
-              holder_name: cardData.holderName,
-              exp_month: parseInt(month),
-              exp_year: parseInt('20' + year),
-              cvv: cardData.cvv,
-            })
-          } else {
-            // Fallback para outras versões do Pagar.me JS
-            cardToken = await PagarMe.tokenizeCard(
-              import.meta.env.VITE_PAGARME_PUBLIC_KEY,
-              {
-                number: cardNumberClean,
-                holder_name: cardData.holderName,
-                exp_month: parseInt(month),
-                exp_year: parseInt('20' + year),
-                cvv: cardData.cvv,
-              }
-            )
-          }
-
-          if (!cardToken || !cardToken.id) {
-            throw new Error('Falha ao gerar token do cartão')
-          }
-
-          cardHash = cardToken.id // No V5 usamos o ID do token como 'card_token'
-          console.log('Card token criado com sucesso:', cardHash)
-        } catch (error: any) {
-          console.error('Erro ao criar card token:', error)
-          throw new Error('Erro ao processar dados do cartão: ' + (error.message || 'Verifique os dados'))
+        // Passar os dados brutos para o backend (o backend cuidará da segurança via sk_key)
+        cardInfo = {
+          number: cardNumberClean,
+          holder_name: cardData.holderName,
+          exp_month: parseInt(month),
+          exp_year: parseInt('20' + year),
+          cvv: cardData.cvv,
         }
       }
 
@@ -207,7 +127,7 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
           donor_phone: donorPhone,
           donor_cpf: donorCpf.replace(/\D/g, ''),
           payment_method: paymentMethod,
-          card_hash: cardHash,
+          card_info: cardInfo,
           card_holder_cpf: paymentMethod === 'credit_card' ? cardData.cpf.replace(/\D/g, '') : donorCpf.replace(/\D/g, ''),
         }),
       })
@@ -345,12 +265,10 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
                 type="submit"
                 className="flex-1"
                 loading={loading}
-                disabled={loading || (paymentMethod === 'credit_card' && !scriptLoaded)}
+                disabled={loading}
               >
                 {loading ? (
                   'Processando...'
-                ) : paymentMethod === 'credit_card' && !scriptLoaded ? (
-                  'Carregando sistema de cartão...'
                 ) : (
                   'Confirmar Doação'
                 )}
