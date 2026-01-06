@@ -12,7 +12,7 @@ interface PagarmeCheckoutProps {
   donorCpf: string
   paymentMethod: 'pix' | 'credit_card' | 'boleto'
   onClose: () => void
-  onSuccess: (transactionId: string) => void
+  onSuccess: (transactionId: string, paymentMethod: 'pix' | 'credit_card' | 'boleto') => void
   onError: (error: string) => void
 }
 
@@ -121,7 +121,7 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
           }
 
           // Criar cliente Pagar.me
-          const client = await pagarme.client.connect({ encryption_key: import.meta.env.VITE_PAGARME_ENCRYPTION_KEY })
+          const client = await pagarme.client.connect({ encryption_key: import.meta.env.VITE_PAGARME_PUBLIC_KEY })
 
           // Criar card hash (criptografado no client-side)
           cardHash = await client.security.encrypt({
@@ -139,7 +139,7 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
       }
 
       // Chamar a API do Pagar.me
-      const response = await fetch('/api/process-pagarme-payment', {
+      const response = await fetch('/.netlify/functions/process-pagarme-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,10 +165,15 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
       const result = await response.json()
       console.log('Resultado do pagamento:', result)
 
+      // Status válidos para sucesso:
+      // - paid: Cartão aprovado
+      // - authorized: Cartão autorizado (aguardando captura)
+      // - pending: PIX/Boleto aguardando pagamento (sucesso!)
+      // - waiting_payment: PIX/Boleto aguardando pagamento (sucesso!)
       if (result.status === 'paid' || result.status === 'authorized') {
-        onSuccess(result.transactionId)
-      } else if (result.status === 'waiting_payment') {
-        // Para PIX e Boleto
+        onSuccess(result.transactionId, paymentMethod)
+      } else if (result.status === 'pending' || result.status === 'waiting_payment') {
+        // Para PIX e Boleto - status pending/waiting_payment é SUCESSO
         if (result.pixQrCode) {
           // Mostrar QR Code do PIX
           window.open(result.pixQrCodeUrl, '_blank')
@@ -176,9 +181,12 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
           // Abrir Boleto
           window.open(result.boletoUrl, '_blank')
         }
-        onSuccess(result.transactionId)
+        onSuccess(result.transactionId, paymentMethod)
       } else {
-        throw new Error('Pagamento não foi aprovado')
+        // Status de falha: failed, refused, canceled, etc.
+        console.error('Status não aprovado:', result.status)
+        console.error('Detalhes:', result)
+        throw new Error(`Pagamento ${result.status}: ${result.message || 'Status não aprovado'}`)
       }
     } catch (error: any) {
       console.error('Erro no checkout Pagar.me:', error)
