@@ -93,17 +93,15 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
         const [month, year] = cardData.expirationDate.split('/')
         const cpfClean = cardData.cpf.replace(/\D/g, '')
 
-        // Usar Pagar.me V1 para criar o hash (tokenização no front)
-        const PagarMe = (window as any).PagarMe || (window as any).PagarmeCheckout || (window as any).pagarme
+        // Usar PagarmeCheckout (do script tokenizecard.js)
+        const PagarmeCheckout = (window as any).PagarmeCheckout
         
-        if (!PagarMe) {
+        if (!PagarmeCheckout) {
+          console.error('Objeto PagarmeCheckout não encontrado no window')
           throw new Error('O sistema de segurança do Pagar.me ainda está carregando. Por favor, aguarde alguns segundos e tente novamente.')
         }
 
-        // Garantir que a chave de criptografia está definida (caso o script não tenha pegado do data-attribute)
-        if (!PagarMe.encryption_key) {
-          PagarMe.encryption_key = import.meta.env.VITE_PAGARME_PUBLIC_KEY
-        }
+        console.log('PagarmeCheckout encontrado. Métodos disponíveis:', Object.keys(PagarmeCheckout))
 
         try {
           // Criar objeto de cartão para o Pagar.me
@@ -117,22 +115,37 @@ export const PagarmeCheckout: React.FC<PagarmeCheckoutProps> = ({
 
           // Gerar o hash do cartão
           cardHash = await new Promise((resolve, reject) => {
-            // Tenta usar createToken que é o método padrão da V1
-            const createTokenMethod = PagarMe.createToken || (PagarMe.token && PagarMe.token.create)
+            // Tentar os diferentes caminhos possíveis no PagarmeCheckout (V1 tokenizecard.js)
+            const tokenService = PagarmeCheckout.token || PagarmeCheckout
+            const createTokenMethod = tokenService.create || tokenService.createToken
             
             if (typeof createTokenMethod === 'function') {
-              createTokenMethod(card, (response: any) => {
-                if (response.errors) {
-                  console.error('Erro na tokenização:', response.errors)
-                  reject(new Error(response.errors[0].message || 'Erro ao validar cartão'))
-                } else {
-                  resolve(response.id)
-                }
-              })
+              // No PagarmeCheckout (V1), às vezes a chave deve ser passada como primeiro argumento ou estar no objeto
+              const encryptionKey = import.meta.env.VITE_PAGARME_PUBLIC_KEY
+              
+              // Tenta chamar o método (algumas versões esperam (key, card, callback), outras (card, callback))
+              try {
+                createTokenMethod.call(tokenService, card, (response: any) => {
+                  if (response.errors) {
+                    console.error('Erro na tokenização:', response.errors)
+                    reject(new Error(response.errors[0].message || 'Erro ao validar cartão'))
+                  } else {
+                    resolve(response.id)
+                  }
+                })
+              } catch (err) {
+                // Fallback para o formato (encryptionKey, card, callback)
+                createTokenMethod.call(tokenService, encryptionKey, card, (response: any) => {
+                  if (response.errors) {
+                    reject(new Error(response.errors[0].message || 'Erro ao validar cartão'))
+                  } else {
+                    resolve(response.id)
+                  }
+                })
+              }
             } else {
-              // Se não encontrar o método direto, tenta inicializar via Checkout se disponível
-              console.warn('Método createToken não encontrado diretamente. Tentando fallback...')
-              reject(new Error('Falha ao inicializar biblioteca de segurança (método não encontrado)'))
+              console.error('Método de tokenização não encontrado em PagarmeCheckout. Chaves:', Object.keys(PagarmeCheckout))
+              reject(new Error('Falha ao inicializar biblioteca de segurança (método de tokenização não encontrado)'))
             }
           })
 
