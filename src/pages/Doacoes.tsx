@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
-import { processPagarmeDonation, savePagarmeDonation, type PagarmeDonationData } from '../lib/pagarmeService'
 import { processPayPalDonation, PAYPAL_CURRENCIES, formatCurrency, type PayPalDonationData } from '../lib/paypalService'
-import { PagarmeCheckout } from '../components/PagarmeCheckout'
+import { saveCieloDonation, type CieloDonationData } from '../lib/cieloService'
 import { PaymentSuccess } from '../components/PaymentSuccess'
+import { CieloCheckout } from '../components/CieloCheckout'
 import {
   Heart,
   CreditCard,
@@ -35,10 +35,11 @@ const Doacoes: React.FC = () => {
   const [searchParams] = useSearchParams()
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [customAmount, setCustomAmount] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card' | 'boleto' | 'paypal' | null>(null)
-  const [paymentProvider, setPaymentProvider] = useState<'pagarme' | 'paypal'>('pagarme')
+  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'cielo_pix' | 'cielo_credit' | 'cielo_debit' | null>(null)
   const [selectedCurrency, setSelectedCurrency] = useState<keyof typeof PAYPAL_CURRENCIES>('USD')
   const [isInternational, setIsInternational] = useState(false)
+  const [showCieloCheckout, setShowCieloCheckout] = useState(false)
+  const [cieloData, setCieloData] = useState<CieloDonationData | null>(null)
   const [donorInfo, setDonorInfo] = useState({
     name: '',
     email: '',
@@ -50,21 +51,32 @@ const Doacoes: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [pixCopied, setPixCopied] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
-  const [showPagarmeCheckout, setShowPagarmeCheckout] = useState(false)
-  const [pagarmeData, setPagarmeData] = useState<PagarmeDonationData | null>(null)
   const [showBankTransfer, setShowBankTransfer] = useState(false)
   const [transactionId, setTransactionId] = useState<string | null>(null)
-  const [successPaymentMethod, setSuccessPaymentMethod] = useState<'pix' | 'credit_card' | 'boleto' | null>(null)
+  const [successPaymentMethod, setSuccessPaymentMethod] = useState<'pix' | 'credit_card' | 'debit_card' | 'boleto' | 'paypal' | null>(null)
 
-  // Verificar status do pagamento ao retornar do Mercado Pago
+  // Mock data for success state if needed
+  const [lastDonationData, setLastDonationData] = useState<{amount: number, donor_name: string, donor_email: string} | null>(null)
+
+  // Verificar status do pagamento ao retornar do Mercado Pago ou Cielo
   useEffect(() => {
     const status = searchParams.get('status')
+    const payment = searchParams.get('payment')
+    
     if (status === 'success') {
       setSuccess(true)
     } else if (status === 'failure') {
       setError(t('donations.payment_not_approved'))
     } else if (status === 'pending') {
       setError(t('donations.payment_pending'))
+    } else if (status === 'processing' && payment === 'cielo') {
+      // Retorno da autenticação Cielo para cartão de débito
+      setSuccess(true)
+      setSuccessPaymentMethod('debit_card')
+      setTransactionId('CIELO-' + Date.now())
+      // Limpar URL params para evitar loop
+      const newUrl = window.location.pathname
+      window.history.replaceState({}, '', newUrl)
     }
   }, [searchParams, t])
 
@@ -109,18 +121,6 @@ const Doacoes: React.FC = () => {
       return
     }
 
-    // Validar email obrigatório
-    if (!donorInfo.email) {
-      setError('Email é obrigatório para doações')
-      return
-    }
-
-    // Validar CPF apenas para Pagar.me (pagamentos nacionais)
-    if (paymentMethod !== 'paypal' && (!donorInfo.cpf || donorInfo.cpf.replace(/\D/g, '').length !== 11)) {
-      setError('CPF válido é obrigatório para doações')
-      return
-    }
-
     setLoading(true)
     setError(null)
 
@@ -131,7 +131,7 @@ const Doacoes: React.FC = () => {
           amount,
           currency: selectedCurrency,
           donor_name: donorInfo.name || 'Doador Anônimo',
-          donor_email: donorInfo.email,
+          donor_email: donorInfo.email || 'anonimo@doacao.com',
           donor_phone: donorInfo.phone || undefined,
         }
 
@@ -140,19 +140,27 @@ const Doacoes: React.FC = () => {
         return
       }
 
-      // Processar doação via Pagar.me - abrir modal de checkout
-      const donationData: PagarmeDonationData = {
-        amount,
-        donor_name: donorInfo.name || 'Doador Anônimo',
-        donor_email: donorInfo.email,
-        donor_phone: donorInfo.phone || undefined,
-        donor_cpf: donorInfo.cpf,
-        payment_method: paymentMethod === 'card' ? 'credit_card' : paymentMethod as 'pix' | 'boleto' | 'credit_card',
+      // Processar doação via Cielo (nacional)
+      if (paymentMethod === 'cielo_pix' || paymentMethod === 'cielo_credit' || paymentMethod === 'cielo_debit') {
+        const cieloPaymentMethod =
+          paymentMethod === 'cielo_pix' ? 'pix' :
+          paymentMethod === 'cielo_credit' ? 'credit_card' :
+          'debit_card'
+
+        const cieloPaymentData: CieloDonationData = {
+          amount,
+          donor_name: donorInfo.name || 'Doador Anônimo',
+          donor_email: donorInfo.email || 'anonimo@doacao.com',
+          donor_phone: donorInfo.phone || undefined,
+          donor_cpf: donorInfo.cpf || '00000000000',
+          payment_method: cieloPaymentMethod,
+        }
+
+        setCieloData(cieloPaymentData)
+        setShowCieloCheckout(true)
+        setLoading(false)
+        return
       }
-      setPagarmeData(donationData)
-      setShowPagarmeCheckout(true)
-      setLoading(false)
-      return
     } catch (error) {
       console.error('Failed to process donation:', error)
       setError(t('donations.error_processing'))
@@ -250,14 +258,14 @@ const Doacoes: React.FC = () => {
     }
   ]
 
-  if (success && transactionId && successPaymentMethod && pagarmeData) {
+  if (success && transactionId && successPaymentMethod && lastDonationData) {
     return (
       <PaymentSuccess
-        amount={pagarmeData.amount}
+        amount={lastDonationData.amount}
         transactionId={transactionId}
-        paymentMethod={successPaymentMethod}
-        donorName={pagarmeData.donor_name || 'Doador Anônimo'}
-        donorEmail={pagarmeData.donor_email || ''}
+        paymentMethod={successPaymentMethod === 'paypal' ? 'credit_card' : successPaymentMethod}
+        donorName={lastDonationData.donor_name || 'Doador Anônimo'}
+        donorEmail={lastDonationData.donor_email || ''}
         onNewDonation={() => {
           setSuccess(false)
           setTransactionId(null)
@@ -265,7 +273,7 @@ const Doacoes: React.FC = () => {
           setSelectedAmount(null)
           setCustomAmount('')
           setPaymentMethod(null)
-          setPagarmeData(null)
+          setLastDonationData(null)
           setDonorInfo({ name: '', email: '', phone: '', cpf: '' })
         }}
       />
@@ -352,12 +360,16 @@ const Doacoes: React.FC = () => {
                 </h3>
 
                 <div className="space-y-3">
+                  {/* PIX - Cielo */}
                   <Card
-                    variant={paymentMethod === 'pix' ? 'elevated' : 'glass'}
+                    variant={paymentMethod === 'cielo_pix' ? 'elevated' : 'glass'}
                     className={`p-4 cursor-pointer transition-all ${
-                      paymentMethod === 'pix' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                      paymentMethod === 'cielo_pix' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
                     }`}
-                    onClick={() => setPaymentMethod('pix')}
+                    onClick={() => {
+                      setPaymentMethod('cielo_pix')
+                      setIsInternational(false)
+                    }}
                   >
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -370,12 +382,16 @@ const Doacoes: React.FC = () => {
                     </div>
                   </Card>
 
+                  {/* Cartão de Crédito - Cielo */}
                   <Card
-                    variant={paymentMethod === 'card' ? 'elevated' : 'glass'}
+                    variant={paymentMethod === 'cielo_credit' ? 'elevated' : 'glass'}
                     className={`p-4 cursor-pointer transition-all ${
-                      paymentMethod === 'card' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                      paymentMethod === 'cielo_credit' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
                     }`}
-                    onClick={() => setPaymentMethod('card')}
+                    onClick={() => {
+                      setPaymentMethod('cielo_credit')
+                      setIsInternational(false)
+                    }}
                   >
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -388,24 +404,29 @@ const Doacoes: React.FC = () => {
                     </div>
                   </Card>
 
+                  {/* Cartão de Débito - Cielo */}
                   <Card
-                    variant={paymentMethod === 'boleto' ? 'elevated' : 'glass'}
+                    variant={paymentMethod === 'cielo_debit' ? 'elevated' : 'glass'}
                     className={`p-4 cursor-pointer transition-all ${
-                      paymentMethod === 'boleto' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                      paymentMethod === 'cielo_debit' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
                     }`}
-                    onClick={() => setPaymentMethod('boleto')}
+                    onClick={() => {
+                      setPaymentMethod('cielo_debit')
+                      setIsInternational(false)
+                    }}
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-orange-600" />
+                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                        <CreditCard className="w-5 h-5 text-purple-600" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-800">Boleto Bancário</h4>
-                        <p className="text-sm text-gray-600">{t('donations.boleto_description')}</p>
+                        <h4 className="font-semibold text-gray-800">Cartão de Débito</h4>
+                        <p className="text-sm text-gray-600">Pagamento à vista com cartão de débito</p>
                       </div>
                     </div>
                   </Card>
 
+                  {/* PayPal - Internacional */}
                   <Card
                     variant={paymentMethod === 'paypal' ? 'elevated' : 'glass'}
                     className={`p-4 cursor-pointer transition-all ${
@@ -422,7 +443,7 @@ const Doacoes: React.FC = () => {
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-800">PayPal</h4>
-                        <p className="text-sm text-gray-600">Pagamento internacional seguro</p>
+                        <p className="text-sm text-gray-600">Pagamento internacional seguro (Cartão de Crédito)</p>
                       </div>
                     </div>
                   </Card>
@@ -513,9 +534,10 @@ const Doacoes: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">{t('donations.summary_method')}:</span>
                     <span className="font-semibold text-gray-800">
-                      {paymentMethod === 'pix' ? t('donations.pix') :
-                       paymentMethod === 'card' ? t('donations.card') :
-                       paymentMethod === 'boleto' ? t('donations.boleto') :
+                      {paymentMethod === 'paypal' ? 'PayPal' :
+                       paymentMethod === 'cielo_pix' ? 'PIX' :
+                       paymentMethod === 'cielo_credit' ? 'Cartão de Crédito' :
+                       paymentMethod === 'cielo_debit' ? 'Cartão de Débito' :
                        t('donations.method_not_selected')}
                     </span>
                   </div>
@@ -538,7 +560,7 @@ const Doacoes: React.FC = () => {
                     disabled={loading}
                   >
                     <Heart className="w-5 h-5 mr-2" />
-                    {loading ? t('donations.processing') : 'Pagar com Pagar.me'}
+                    {loading ? t('donations.processing') : 'Pagar'}
                   </Button>
                 )}
               </Card>
@@ -547,20 +569,21 @@ const Doacoes: React.FC = () => {
               <Card variant="glass" className="p-6">
                 <h3 className="text-lg font-semibold mb-3 text-gray-800 flex items-center">
                   <Check className="w-5 h-5 mr-2 text-green-600" />
-                  {t('donations.secure_payment')}
+                  Pagamento Seguro
                 </h3>
-                <div
-                  className="text-sm text-gray-600 leading-relaxed mb-4"
-                  dangerouslySetInnerHTML={{ __html: t('donations.mercadopago_info') }}
-                />
+                <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                  {paymentMethod === 'paypal'
+                    ? 'Processamos pagamentos internacionais de forma segura através do PayPal, aceito mundialmente.'
+                    : 'Processamos seus pagamentos de forma 100% segura através da Cielo, uma das maiores e mais confiáveis plataformas de pagamento do Brasil.'}
+                </p>
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-blue-800 mb-2 text-sm">{t('donations.how_it_works')}</h4>
+                  <h4 className="font-semibold text-blue-800 mb-2 text-sm">Como funciona:</h4>
                   <ol className="text-sm text-blue-700 space-y-1">
-                    <li>1. {t('donations.mercadopago_steps.step1')}</li>
-                    <li>2. {t('donations.mercadopago_steps.step2')}</li>
-                    <li>3. {t('donations.mercadopago_steps.step3')}</li>
-                    <li>4. {t('donations.mercadopago_steps.step4')}</li>
-                    <li>5. {t('donations.mercadopago_steps.step5')}</li>
+                    <li>1. Selecione o valor e método de pagamento</li>
+                    <li>2. Preencha seus dados pessoais</li>
+                    <li>3. {paymentMethod === 'cielo_pix' ? 'Escaneie o QR Code do PIX' : 'Insira os dados do seu cartão'}</li>
+                    <li>4. Confirme o pagamento</li>
+                    <li>5. Receba o comprovante por email</li>
                   </ol>
                 </div>
               </Card>
@@ -885,29 +908,34 @@ const Doacoes: React.FC = () => {
         </div>
       </section>
 
-      {/* Modal de Checkout Pagar.me */}
-      {showPagarmeCheckout && pagarmeData && (
-        <PagarmeCheckout
-          amount={pagarmeData.amount}
-          donorName={pagarmeData.donor_name || ''}
-          donorEmail={pagarmeData.donor_email || ''}
-          donorPhone={pagarmeData.donor_phone || ''}
-          donorCpf={pagarmeData.donor_cpf || ''}
-          paymentMethod={pagarmeData.payment_method}
+      {/* Modal de Checkout Cielo */}
+      {showCieloCheckout && cieloData && (
+        <CieloCheckout
+          amount={cieloData.amount}
+          donorName={cieloData.donor_name || ''}
+          donorEmail={cieloData.donor_email || ''}
+          donorPhone={cieloData.donor_phone || ''}
+          donorCpf={cieloData.donor_cpf || ''}
+          paymentMethod={cieloData.payment_method}
           onClose={() => {
-            setShowPagarmeCheckout(false)
-            setPagarmeData(null)
+            setShowCieloCheckout(false)
+            setCieloData(null)
           }}
           onSuccess={async (txId, method) => {
             // Salvar doação no banco
-            await savePagarmeDonation(pagarmeData, txId)
-            setShowPagarmeCheckout(false)
+            await saveCieloDonation(cieloData, txId, method === 'pix' ? 'pending' : 'approved')
+            setShowCieloCheckout(false)
             setTransactionId(txId)
             setSuccessPaymentMethod(method)
+            setLastDonationData({
+              amount: cieloData.amount,
+              donor_name: cieloData.donor_name,
+              donor_email: cieloData.donor_email
+            })
             setSuccess(true)
           }}
           onError={(errorMessage) => {
-            setShowPagarmeCheckout(false)
+            setShowCieloCheckout(false)
             setError(errorMessage)
           }}
         />
