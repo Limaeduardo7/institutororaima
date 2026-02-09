@@ -6,8 +6,10 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { processPayPalDonation, PAYPAL_CURRENCIES, formatCurrency, type PayPalDonationData } from '../lib/paypalService'
 import { saveCieloDonation, type CieloDonationData } from '../lib/cieloService'
+import { savePagarmeDonation, type PagarmeDonationData } from '../lib/pagarmeService'
 import { PaymentSuccess } from '../components/PaymentSuccess'
 import { CieloCheckout } from '../components/CieloCheckout'
+import { PagarmeCheckout } from '../components/PagarmeCheckout'
 import {
   Heart,
   CreditCard,
@@ -35,11 +37,14 @@ const Doacoes: React.FC = () => {
   const [searchParams] = useSearchParams()
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
   const [customAmount, setCustomAmount] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'cielo_pix' | 'cielo_credit' | 'cielo_debit' | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<'paypal' | 'cielo_pix' | 'cielo_credit' | 'cielo_debit' | 'cielo_inter' | 'pagarme_pix' | 'pagarme_credit' | 'pagarme_boleto' | null>(null)
   const [selectedCurrency, setSelectedCurrency] = useState<keyof typeof PAYPAL_CURRENCIES>('USD')
   const [isInternational, setIsInternational] = useState(false)
+  const [paymentGateway, setPaymentGateway] = useState<'cielo' | 'pagarme' | 'paypal' | 'cielo_inter' | null>(null)
   const [showCieloCheckout, setShowCieloCheckout] = useState(false)
   const [cieloData, setCieloData] = useState<CieloDonationData | null>(null)
+  const [showPagarmeCheckout, setShowPagarmeCheckout] = useState(false)
+  const [pagarmeData, setPagarmeData] = useState<any>(null)
   const [donorInfo, setDonorInfo] = useState({
     name: '',
     email: '',
@@ -56,13 +61,13 @@ const Doacoes: React.FC = () => {
   const [successPaymentMethod, setSuccessPaymentMethod] = useState<'pix' | 'credit_card' | 'debit_card' | 'boleto' | 'paypal' | null>(null)
 
   // Mock data for success state if needed
-  const [lastDonationData, setLastDonationData] = useState<{amount: number, donor_name: string, donor_email: string} | null>(null)
+  const [lastDonationData, setLastDonationData] = useState<{ amount: number, donor_name: string, donor_email: string } | null>(null)
 
   // Verificar status do pagamento ao retornar do Mercado Pago ou Cielo
   useEffect(() => {
     const status = searchParams.get('status')
     const payment = searchParams.get('payment')
-    
+
     if (status === 'success') {
       setSuccess(true)
     } else if (status === 'failure') {
@@ -140,15 +145,16 @@ const Doacoes: React.FC = () => {
         return
       }
 
-      // Processar doação via Cielo (nacional)
-      if (paymentMethod === 'cielo_pix' || paymentMethod === 'cielo_credit' || paymentMethod === 'cielo_debit') {
+      // Processar doação via Cielo (nacional ou internacional)
+      if (paymentMethod === 'cielo_pix' || paymentMethod === 'cielo_credit' || paymentMethod === 'cielo_debit' || paymentMethod === 'cielo_inter') {
         const cieloPaymentMethod =
           paymentMethod === 'cielo_pix' ? 'pix' :
-          paymentMethod === 'cielo_credit' ? 'credit_card' :
-          'debit_card'
+            paymentMethod === 'cielo_debit' ? 'debit_card' :
+              'credit_card' // cielo_credit ou cielo_inter
 
         const cieloPaymentData: CieloDonationData = {
           amount,
+          currency: paymentMethod === 'cielo_inter' ? 'USD' : 'BRL',
           donor_name: donorInfo.name || 'Doador Anônimo',
           donor_email: donorInfo.email || 'anonimo@doacao.com',
           donor_phone: donorInfo.phone || undefined,
@@ -158,6 +164,43 @@ const Doacoes: React.FC = () => {
 
         setCieloData(cieloPaymentData)
         setShowCieloCheckout(true)
+        setLoading(false)
+        return
+      }
+
+      // Processar doação via Pagar.me (nacional)
+      if (paymentMethod === 'pagarme_pix' || paymentMethod === 'pagarme_credit' || paymentMethod === 'pagarme_boleto') {
+        // CPF é obrigatório para PIX e Boleto
+        if ((paymentMethod === 'pagarme_pix' || paymentMethod === 'pagarme_boleto') && !donorInfo.cpf) {
+          setError('CPF é obrigatório para pagamentos via PIX ou Boleto')
+          setLoading(false)
+          return
+        }
+
+        // Validar formato do CPF (11 dígitos)
+        const cpfClean = donorInfo.cpf?.replace(/\D/g, '') || ''
+        if ((paymentMethod === 'pagarme_pix' || paymentMethod === 'pagarme_boleto') && cpfClean.length !== 11) {
+          setError('CPF inválido. Digite os 11 dígitos do CPF')
+          setLoading(false)
+          return
+        }
+
+        const pagarmePaymentMethod =
+          paymentMethod === 'pagarme_pix' ? 'pix' :
+            paymentMethod === 'pagarme_credit' ? 'credit_card' :
+              'boleto'
+
+        const pagarmePaymentData = {
+          amount,
+          donor_name: donorInfo.name || 'Doador Anônimo',
+          donor_email: donorInfo.email || 'anonimo@doacao.com',
+          donor_phone: donorInfo.phone || undefined,
+          donor_cpf: donorInfo.cpf || '00000000000',
+          payment_method: pagarmePaymentMethod,
+        }
+
+        setPagarmeData(pagarmePaymentData)
+        setShowPagarmeCheckout(true)
         setLoading(false)
         return
       }
@@ -219,7 +262,7 @@ const Doacoes: React.FC = () => {
 
   const totalDonated = donationsHistory.reduce((sum, donation) => sum + donation.amount, 0)
   const totalDonations = donationsHistory.length
-  
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR')
   }
@@ -327,7 +370,7 @@ const Doacoes: React.FC = () => {
               <h2 className="text-3xl font-bold mb-6 gradient-text">
                 {t('donations.amount')}
               </h2>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
                 {predefinedAmounts.map((amount) => (
                   <Button
@@ -353,101 +396,224 @@ const Doacoes: React.FC = () => {
 
 
 
-              {/* Payment Methods */}
+              {/* Payment Gateway Selection */}
               <div className="mb-8">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800">
-                  {t('donations.payment_method')}
+                  Escolha a Plataforma de Pagamento
                 </h3>
 
-                <div className="space-y-3">
-                  {/* PIX - Cielo */}
+                <div className="grid grid-cols-1 gap-4 mb-6">
+                  {/* Cielo */}
                   <Card
-                    variant={paymentMethod === 'cielo_pix' ? 'elevated' : 'glass'}
-                    className={`p-4 cursor-pointer transition-all ${
-                      paymentMethod === 'cielo_pix' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
-                    }`}
+                    variant={paymentGateway === 'cielo' ? 'elevated' : 'glass'}
+                    className={`p-4 cursor-pointer transition-all ${paymentGateway === 'cielo' ? 'ring-2 ring-primary-500 shadow-md' : 'hover:bg-white/5'
+                      }`}
                     onClick={() => {
-                      setPaymentMethod('cielo_pix')
+                      setPaymentGateway('cielo')
+                      setPaymentMethod(null)
                       setIsInternational(false)
                     }}
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <Smartphone className="w-5 h-5 text-green-600" />
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <CreditCard className="w-6 h-6 text-blue-600" />
                       </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-800">PIX</h4>
-                        <p className="text-sm text-gray-600">{t('donations.pix_description')}</p>
+                      <div className="text-left">
+                        <h4 className="font-bold text-gray-800">Cielo</h4>
+                        <p className="text-xs text-gray-600">PIX, Crédito e Débito</p>
                       </div>
                     </div>
                   </Card>
 
-                  {/* Cartão de Crédito - Cielo */}
+                  {/* Pagar.me */}
                   <Card
-                    variant={paymentMethod === 'cielo_credit' ? 'elevated' : 'glass'}
-                    className={`p-4 cursor-pointer transition-all ${
-                      paymentMethod === 'cielo_credit' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
-                    }`}
+                    variant={paymentGateway === 'pagarme' ? 'elevated' : 'glass'}
+                    className={`p-4 cursor-pointer transition-all ${paymentGateway === 'pagarme' ? 'ring-2 ring-primary-500 shadow-md' : 'hover:bg-white/5'
+                      }`}
                     onClick={() => {
-                      setPaymentMethod('cielo_credit')
+                      setPaymentGateway('pagarme')
+                      setPaymentMethod(null)
                       setIsInternational(false)
                     }}
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <CreditCard className="w-5 h-5 text-blue-600" />
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Smartphone className="w-6 h-6 text-green-600" />
                       </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-800">Cartão de Crédito</h4>
-                        <p className="text-sm text-gray-600">{t('donations.card_description')}</p>
+                      <div className="text-left">
+                        <h4 className="font-bold text-gray-800">Pagar.me</h4>
+                        <p className="text-xs text-gray-600">PIX, Crédito e Boleto</p>
                       </div>
                     </div>
                   </Card>
 
-                  {/* Cartão de Débito - Cielo */}
+                  {/* PayPal */}
                   <Card
-                    variant={paymentMethod === 'cielo_debit' ? 'elevated' : 'glass'}
-                    className={`p-4 cursor-pointer transition-all ${
-                      paymentMethod === 'cielo_debit' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
-                    }`}
+                    variant={paymentGateway === 'paypal' ? 'elevated' : 'glass'}
+                    className={`p-4 cursor-pointer transition-all ${paymentGateway === 'paypal' ? 'ring-2 ring-primary-500 shadow-md' : 'hover:bg-white/5'
+                      }`}
                     onClick={() => {
-                      setPaymentMethod('cielo_debit')
-                      setIsInternational(false)
-                    }}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                        <CreditCard className="w-5 h-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-800">Cartão de Débito</h4>
-                        <p className="text-sm text-gray-600">Pagamento à vista com cartão de débito</p>
-                      </div>
-                    </div>
-                  </Card>
-
-                  {/* PayPal - Internacional */}
-                  <Card
-                    variant={paymentMethod === 'paypal' ? 'elevated' : 'glass'}
-                    className={`p-4 cursor-pointer transition-all ${
-                      paymentMethod === 'paypal' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
-                    }`}
-                    onClick={() => {
+                      setPaymentGateway('paypal')
                       setPaymentMethod('paypal')
                       setIsInternational(true)
                     }}
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Globe className="w-5 h-5 text-blue-600" />
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Globe className="w-6 h-6 text-purple-600" />
                       </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-800">PayPal</h4>
-                        <p className="text-sm text-gray-600">Pagamento internacional seguro (Cartão de Crédito)</p>
+                      <div className="text-left">
+                        <h4 className="font-bold text-gray-800">PayPal</h4>
+                        <p className="text-xs text-gray-600">Pagamento Internacional</p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Cielo Internacional */}
+                  <Card
+                    variant={paymentGateway === 'cielo_inter' ? 'elevated' : 'glass'}
+                    className={`p-4 cursor-pointer transition-all ${paymentGateway === 'cielo_inter' ? 'ring-2 ring-primary-500 shadow-md' : 'hover:bg-white/5'
+                      }`}
+                    onClick={() => {
+                      setPaymentGateway('cielo_inter')
+                      setPaymentMethod('cielo_inter')
+                      setIsInternational(true)
+                      setSelectedCurrency('USD')
+                    }}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <DollarSign className="w-6 h-6 text-indigo-600" />
+                      </div>
+                      <div className="text-left">
+                        <h4 className="font-bold text-gray-800">Cielo Inter</h4>
+                        <p className="text-xs text-gray-600">Cartão Internacional (USD)</p>
                       </div>
                     </div>
                   </Card>
                 </div>
+
+                {/* Payment Methods - Cielo */}
+                {paymentGateway === 'cielo' && (
+                  <div className="space-y-3">
+                    <h4 className="text-lg font-semibold text-gray-700 mb-3">Escolha a forma de pagamento:</h4>
+
+                    {/* PIX - Cielo */}
+                    <Card
+                      variant={paymentMethod === 'cielo_pix' ? 'elevated' : 'glass'}
+                      className={`p-4 cursor-pointer transition-all ${paymentMethod === 'cielo_pix' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                        }`}
+                      onClick={() => setPaymentMethod('cielo_pix')}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                          <Smartphone className="w-5 h-5 text-green-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-800">PIX</h4>
+                          <p className="text-sm text-gray-600">Pagamento instantâneo e aprovação imediata</p>
+                        </div>
+                      </div>
+                    </Card>
+
+                    {/* Cartão de Crédito - Cielo */}
+                    <Card
+                      variant={paymentMethod === 'cielo_credit' ? 'elevated' : 'glass'}
+                      className={`p-4 cursor-pointer transition-all ${paymentMethod === 'cielo_credit' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                        }`}
+                      onClick={() => setPaymentMethod('cielo_credit')}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <CreditCard className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-800">Cartão de Crédito</h4>
+                          <p className="text-sm text-gray-600">Parcelamento em até 12x</p>
+                        </div>
+                      </div>
+                    </Card>
+
+                    {/* Cartão de Débito - Cielo */}
+                    <Card
+                      variant={paymentMethod === 'cielo_debit' ? 'elevated' : 'glass'}
+                      className={`p-4 cursor-pointer transition-all ${paymentMethod === 'cielo_debit' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                        }`}
+                      onClick={() => setPaymentMethod('cielo_debit')}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                          <CreditCard className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-800">Cartão de Débito</h4>
+                          <p className="text-sm text-gray-600">Pagamento à vista com autenticação bancária</p>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Payment Methods - Pagar.me */}
+                {paymentGateway === 'pagarme' && (
+                  <div className="space-y-3">
+                    <h4 className="text-lg font-semibold text-gray-700 mb-3">Escolha a forma de pagamento:</h4>
+
+                    {/* PIX - Pagar.me */}
+                    <Card
+                      variant={paymentMethod === 'pagarme_pix' ? 'elevated' : 'glass'}
+                      className={`p-4 cursor-pointer transition-all ${paymentMethod === 'pagarme_pix' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                        }`}
+                      onClick={() => setPaymentMethod('pagarme_pix')}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                          <Smartphone className="w-5 h-5 text-teal-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-800">PIX</h4>
+                          <p className="text-sm text-gray-600">Pagamento instantâneo via QR Code</p>
+                        </div>
+                      </div>
+                    </Card>
+
+                    {/* Cartão de Crédito - Pagar.me */}
+                    <Card
+                      variant={paymentMethod === 'pagarme_credit' ? 'elevated' : 'glass'}
+                      className={`p-4 cursor-pointer transition-all ${paymentMethod === 'pagarme_credit' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                        }`}
+                      onClick={() => setPaymentMethod('pagarme_credit')}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                          <CreditCard className="w-5 h-5 text-indigo-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-800">Cartão de Crédito</h4>
+                          <p className="text-sm text-gray-600">Pagamento parcelado ou à vista</p>
+                        </div>
+                      </div>
+                    </Card>
+
+                    {/* Boleto - Pagar.me */}
+                    <Card
+                      variant={paymentMethod === 'pagarme_boleto' ? 'elevated' : 'glass'}
+                      className={`p-4 cursor-pointer transition-all ${paymentMethod === 'pagarme_boleto' ? 'ring-2 ring-primary-500' : 'hover:scale-105'
+                        }`}
+                      onClick={() => setPaymentMethod('pagarme_boleto')}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                          <FileText className="w-5 h-5 text-orange-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-800">Boleto Bancário</h4>
+                          <p className="text-sm text-gray-600">Vencimento em 3 dias úteis</p>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                )}
               </div>
 
               {/* Currency Selection for PayPal */}
@@ -479,40 +645,47 @@ const Doacoes: React.FC = () => {
                 <Input
                   label={t('donations.name')}
                   value={donorInfo.name}
-                  onChange={(e) => setDonorInfo({...donorInfo, name: e.target.value})}
+                  onChange={(e) => setDonorInfo({ ...donorInfo, name: e.target.value })}
                   variant="glass"
                 />
                 <Input
                   label={t('donations.email')}
                   type="email"
                   value={donorInfo.email}
-                  onChange={(e) => setDonorInfo({...donorInfo, email: e.target.value})}
+                  onChange={(e) => setDonorInfo({ ...donorInfo, email: e.target.value })}
                   variant="glass"
                 />
                 <Input
                   label={t('donations.phone')}
                   type="tel"
                   value={donorInfo.phone}
-                  onChange={(e) => setDonorInfo({...donorInfo, phone: e.target.value})}
+                  onChange={(e) => setDonorInfo({ ...donorInfo, phone: e.target.value })}
                   variant="glass"
                 />
                 {paymentMethod !== 'paypal' && (
-                  <Input
-                    label="CPF"
-                    type="text"
-                    value={donorInfo.cpf}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '')
-                      const formatted = value
-                        .replace(/(\d{3})(\d)/, '$1.$2')
-                        .replace(/(\d{3})(\d)/, '$1.$2')
-                        .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-                        .slice(0, 14)
-                      setDonorInfo({...donorInfo, cpf: formatted})
-                    }}
-                    placeholder="000.000.000-00"
-                    variant="glass"
-                  />
+                  <div>
+                    <Input
+                      label={`CPF${(paymentMethod === 'pagarme_pix' || paymentMethod === 'pagarme_boleto') ? ' *' : ''}`}
+                      type="text"
+                      value={donorInfo.cpf}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        const formatted = value
+                          .replace(/(\d{3})(\d)/, '$1.$2')
+                          .replace(/(\d{3})(\d)/, '$1.$2')
+                          .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+                          .slice(0, 14)
+                        setDonorInfo({ ...donorInfo, cpf: formatted })
+                      }}
+                      placeholder="000.000.000-00"
+                      variant="glass"
+                    />
+                    {(paymentMethod === 'pagarme_pix' || paymentMethod === 'pagarme_boleto') && (
+                      <p className="text-xs text-orange-600 mt-1">
+                        * CPF obrigatório para pagamentos via PIX ou Boleto
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -528,17 +701,21 @@ const Doacoes: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">{t('donations.summary_amount')}:</span>
                     <span className="text-2xl font-bold text-primary-800">
-                      R$ {getFinalAmount() || 0}
+                      {paymentMethod === 'cielo_inter' || paymentMethod === 'paypal' ? '$' : 'R$'} {getFinalAmount() || 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">{t('donations.summary_method')}:</span>
                     <span className="font-semibold text-gray-800">
                       {paymentMethod === 'paypal' ? 'PayPal' :
-                       paymentMethod === 'cielo_pix' ? 'PIX' :
-                       paymentMethod === 'cielo_credit' ? 'Cartão de Crédito' :
-                       paymentMethod === 'cielo_debit' ? 'Cartão de Débito' :
-                       t('donations.method_not_selected')}
+                        paymentMethod === 'cielo_pix' ? 'PIX (Cielo)' :
+                          paymentMethod === 'cielo_credit' ? 'Cartão de Crédito (Cielo)' :
+                            paymentMethod === 'cielo_debit' ? 'Cartão de Débito (Cielo)' :
+                              paymentMethod === 'cielo_inter' ? 'Cartão Internacional (Cielo USD)' :
+                                paymentMethod === 'pagarme_pix' ? 'PIX (Pagar.me)' :
+                                  paymentMethod === 'pagarme_credit' ? 'Cartão de Crédito (Pagar.me)' :
+                                    paymentMethod === 'pagarme_boleto' ? 'Boleto Bancário' :
+                                      t('donations.method_not_selected')}
                     </span>
                   </div>
                 </div>
@@ -574,7 +751,9 @@ const Doacoes: React.FC = () => {
                 <p className="text-sm text-gray-600 leading-relaxed mb-4">
                   {paymentMethod === 'paypal'
                     ? 'Processamos pagamentos internacionais de forma segura através do PayPal, aceito mundialmente.'
-                    : 'Processamos seus pagamentos de forma 100% segura através da Cielo, uma das maiores e mais confiáveis plataformas de pagamento do Brasil.'}
+                    : (paymentMethod === 'pagarme_pix' || paymentMethod === 'pagarme_credit' || paymentMethod === 'pagarme_boleto')
+                      ? 'Processamos seus pagamentos de forma 100% segura através da Pagar.me, uma das plataformas de pagamento mais confiáveis do Brasil.'
+                      : 'Processamos seus pagamentos de forma 100% segura através da Cielo, uma das maiores e mais confiáveis plataformas de pagamento do Brasil.'}
                 </p>
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h4 className="font-semibold text-blue-800 mb-2 text-sm">Como funciona:</h4>
@@ -816,7 +995,7 @@ const Doacoes: React.FC = () => {
                         <p className="text-gray-600 mb-1">
                           <strong>{t('donations.purpose')}:</strong> {donation.purpose}
                         </p>
-                        
+
                         <div className="flex items-center gap-4 text-sm text-gray-500">
                           <div className="flex items-center">
                             <Calendar className="w-4 h-4 mr-1" />
@@ -866,9 +1045,9 @@ const Doacoes: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {causes.map((cause, index) => (
-              <Card 
+              <Card
                 key={index}
-                variant="glass" 
+                variant="glass"
                 className="text-center p-6 hover:scale-105 transition-transform duration-300"
               >
                 <div className={`w-16 h-16 ${cause.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
@@ -917,6 +1096,7 @@ const Doacoes: React.FC = () => {
           donorPhone={cieloData.donor_phone || ''}
           donorCpf={cieloData.donor_cpf || ''}
           paymentMethod={cieloData.payment_method}
+          currency={cieloData.currency}
           onClose={() => {
             setShowCieloCheckout(false)
             setCieloData(null)
@@ -936,6 +1116,44 @@ const Doacoes: React.FC = () => {
           }}
           onError={(errorMessage) => {
             setShowCieloCheckout(false)
+            setError(errorMessage)
+          }}
+        />
+      )}
+
+      {/* Modal de Checkout Pagar.me */}
+      {showPagarmeCheckout && pagarmeData && (
+        <PagarmeCheckout
+          amount={pagarmeData.amount}
+          donorName={pagarmeData.donor_name || ''}
+          donorEmail={pagarmeData.donor_email || ''}
+          donorPhone={pagarmeData.donor_phone || ''}
+          donorCpf={pagarmeData.donor_cpf || ''}
+          paymentMethod={pagarmeData.payment_method}
+          onClose={() => {
+            setShowPagarmeCheckout(false)
+            setPagarmeData(null)
+          }}
+          onSuccess={async (txId, method) => {
+            // Salvar doação no banco
+            try {
+              await savePagarmeDonation(pagarmeData, txId)
+            } catch (error) {
+              console.error('Erro ao salvar doação Pagar.me:', error)
+              // Continua mesmo se houver erro ao salvar
+            }
+            setShowPagarmeCheckout(false)
+            setTransactionId(txId)
+            setSuccessPaymentMethod(method)
+            setLastDonationData({
+              amount: pagarmeData.amount,
+              donor_name: pagarmeData.donor_name,
+              donor_email: pagarmeData.donor_email
+            })
+            setSuccess(true)
+          }}
+          onError={(errorMessage) => {
+            setShowPagarmeCheckout(false)
             setError(errorMessage)
           }}
         />

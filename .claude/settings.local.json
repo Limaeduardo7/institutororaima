@@ -30,7 +30,9 @@
       "Bash(do sed -i 's/\"\"stripe\"\"/\"\"paypal\"\"/g; s/\"\"stripe_card\"\"/\"\"paypal_card\"\"/g; s/\"\"stripe_description\"\"/\"\"paypal_description\"\"/g; s/\"\"stripe_info\"\"/\"\"paypal_info\"\"/g; s/\"\"stripe_steps\"\"/\"\"paypal_steps\"\"/g; s/\"\"donate_stripe\"\"/\"\"donate_paypal\"\"/g; s/Stripe/PayPal/g' \"$file\")",
       "Bash(done)",
       "Bash(start https://app.netlify.com/projects/institutoestacao/logs/functions)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(timeout 60 tail:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": []
   }

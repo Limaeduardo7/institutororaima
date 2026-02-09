@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 interface PaymentSuccessProps {
   amount: number
   transactionId: string
-  paymentMethod: 'pix' | 'credit_card' | 'boleto'
+  paymentMethod: 'pix' | 'credit_card' | 'debit_card' | 'boleto'
   donorName: string
   donorEmail: string
   onNewDonation: () => void
@@ -29,6 +29,8 @@ export const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
         return 'PIX'
       case 'credit_card':
         return 'Cartão de Crédito'
+      case 'debit_card':
+        return 'Cartão de Débito'
       case 'boleto':
         return 'Boleto Bancário'
       default:

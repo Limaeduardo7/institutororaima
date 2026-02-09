@@ -1,14 +1,15 @@
 import { Handler } from '@netlify/functions'
 
-// Credenciais do Pagar.me
-const encryptionKey = process.env.VITE_PAGARME_PUBLIC_KEY || ''
+// Credenciais do Pagar.me (via variáveis de ambiente do Netlify)
+// Nota: VITE_* não funcionam em Netlify Functions, usar PAGARME_PUBLIC_KEY
+const encryptionKey = process.env.PAGARME_PUBLIC_KEY || ''
 
 export const handler: Handler = async (event) => {
   // Definir headers CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Content-Type': 'application/json',
   }
 
@@ -21,7 +22,22 @@ export const handler: Handler = async (event) => {
     }
   }
 
-  // Apenas aceitar POST
+  // Aceitar GET para obter a chave pública
+  // Nota: Esta função não é mais necessária para o novo fluxo de checkout
+  // O PagarmeCheckout.tsx agora faz chamadas diretas para process-pagarme-payment
+  if (event.httpMethod === 'GET') {
+    // Retornar sucesso mesmo sem chave configurada para evitar erros no console
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        encryptionKey: encryptionKey || '',
+        message: encryptionKey ? 'OK' : 'Chave não configurada - use process-pagarme-payment diretamente',
+      }),
+    }
+  }
+
+  // POST para criar checkout
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -33,7 +49,7 @@ export const handler: Handler = async (event) => {
   try {
     // Validar credenciais
     if (!encryptionKey) {
-      throw new Error('Credenciais do Pagar.me não configuradas')
+      throw new Error('Credenciais do Pagar.me não configuradas (PAGARME_PUBLIC_KEY)')
     }
 
     // Parse do body
@@ -68,13 +84,11 @@ export const handler: Handler = async (event) => {
     const amountInCents = Math.round(amount * 100)
 
     // Criar dados para o Pagar.me Checkout
-    // Nota: O Pagar.me não tem um checkout hospedado como o Mercado Pago
-    // Vamos retornar os dados necessários para o frontend processar
     const checkoutData = {
       amount: amountInCents,
-      createToken: 'false',
+      createToken: 'true',
       paymentMethods: payment_method === 'credit_card' ? 'credit_card' : payment_method,
-      customerData: 'true',
+      customerData: 'false',
       customer: {
         name: donor_name || 'Doador Anônimo',
         email: donor_email,
@@ -93,7 +107,6 @@ export const handler: Handler = async (event) => {
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        // Retornar URL de volta para o frontend processar usando Pagar.me Checkout.js
         checkoutUrl: `${process.env.URL}/doacoes?status=success&payment=pagarme`,
         transactionId: `temp_${Date.now()}`,
         status: 'pending',

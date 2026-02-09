@@ -1,5 +1,5 @@
 functionsDirectory = "C:\\Users\\Eduar\\Desktop\\SITES\\Estação\\institutororaima\\netlify\\functions"
-functionsDirectoryOrigin = "default"
+functionsDirectoryOrigin = "config"
 headersOrigin = "config"
 redirectsOrigin = "config"
 plugins = []
@@ -38,6 +38,18 @@ for = "/*"
 X-Frame-Options = "DENY"
 X-XSS-Protection = "1; mode=block"
 X-Content-Type-Options = "nosniff"
+
+[[redirects]]
+from = "/api/*"
+to = "/.netlify/functions/:splat"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
 
 [[redirects]]
 from = "/*"

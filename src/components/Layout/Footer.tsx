@@ -107,9 +107,12 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-primary-700 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-2 text-primary-200">
-              <Heart className="w-4 h-4 text-red-400" />
-              <span>&copy; 2025 Instituto Estação. {t('home.footer.rights')}.</span>
+            <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-4 text-primary-200">
+              <div className="flex items-center space-x-2">
+                <Heart className="w-4 h-4 text-red-400" />
+                <span>&copy; 2025 Instituto Estação. {t('home.footer.rights')}.</span>
+              </div>
+              <span className="text-primary-300 text-sm">CNPJ: 03.576.906/0001-47</span>
             </div>
             <div className="text-primary-300 text-sm">
               <span>{t('home.footer.developed_by')} <a href="https://merakigroup.site" target="_blank" rel="noopener noreferrer" className="hover:text-primary-200 transition-colors">Meraki Group</a></span>
