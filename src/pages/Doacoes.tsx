@@ -154,7 +154,7 @@ const Doacoes: React.FC = () => {
 
         const cieloPaymentData: CieloDonationData = {
           amount,
-          currency: paymentMethod === 'cielo_inter' ? 'USD' : 'BRL',
+          currency: paymentMethod === 'cielo_inter' ? selectedCurrency as string : 'BRL',
           donor_name: donorInfo.name || 'Doador Anônimo',
           donor_email: donorInfo.email || 'anonimo@doacao.com',
           donor_phone: donorInfo.phone || undefined,
@@ -379,7 +379,7 @@ const Doacoes: React.FC = () => {
                     onClick={() => handleAmountSelect(amount)}
                     className="h-12"
                   >
-                    R$ {amount}
+                    {amount}
                   </Button>
                 ))}
               </div>
@@ -478,7 +478,6 @@ const Doacoes: React.FC = () => {
                       setPaymentGateway('cielo_inter')
                       setPaymentMethod('cielo_inter')
                       setIsInternational(true)
-                      setSelectedCurrency('USD')
                     }}
                   >
                     <div className="flex items-center space-x-4">
@@ -487,7 +486,7 @@ const Doacoes: React.FC = () => {
                       </div>
                       <div className="text-left">
                         <h4 className="font-bold text-gray-800">Cielo Inter</h4>
-                        <p className="text-xs text-gray-600">Cartão Internacional (USD)</p>
+                        <p className="text-xs text-gray-600">Cartão Internacional (USD / EUR)</p>
                       </div>
                     </div>
                   </Card>
@@ -637,6 +636,30 @@ const Doacoes: React.FC = () => {
                 </div>
               )}
 
+              {/* Currency Selection for Cielo Internacional */}
+              {paymentMethod === 'cielo_inter' && (
+                <div className="mb-8">
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800">
+                    Moeda
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(['USD', 'EUR'] as const).map((code) => {
+                      const info = PAYPAL_CURRENCIES[code]
+                      return (
+                        <Button
+                          key={code}
+                          variant={selectedCurrency === code ? 'primary' : 'outline'}
+                          onClick={() => setSelectedCurrency(code)}
+                          className="h-12"
+                        >
+                          {info.symbol} {code}
+                        </Button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Donor Information */}
               <div className="space-y-4">
                 <h3 className="text-xl font-semibold text-gray-800">
@@ -701,7 +724,7 @@ const Doacoes: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">{t('donations.summary_amount')}:</span>
                     <span className="text-2xl font-bold text-primary-800">
-                      {paymentMethod === 'cielo_inter' || paymentMethod === 'paypal' ? '$' : 'R$'} {getFinalAmount() || 0}
+                      {paymentMethod === 'cielo_inter' || paymentMethod === 'paypal' ? PAYPAL_CURRENCIES[selectedCurrency].symbol : 'R$'} {getFinalAmount() || 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -711,7 +734,7 @@ const Doacoes: React.FC = () => {
                         paymentMethod === 'cielo_pix' ? 'PIX (Cielo)' :
                           paymentMethod === 'cielo_credit' ? 'Cartão de Crédito (Cielo)' :
                             paymentMethod === 'cielo_debit' ? 'Cartão de Débito (Cielo)' :
-                              paymentMethod === 'cielo_inter' ? 'Cartão Internacional (Cielo USD)' :
+                              paymentMethod === 'cielo_inter' ? `Cartão Internacional (Cielo ${selectedCurrency})` :
                                 paymentMethod === 'pagarme_pix' ? 'PIX (Pagar.me)' :
                                   paymentMethod === 'pagarme_credit' ? 'Cartão de Crédito (Pagar.me)' :
                                     paymentMethod === 'pagarme_boleto' ? 'Boleto Bancário' :
