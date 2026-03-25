@@ -1,20 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { donationService } from '../../lib/supabaseClient';
 import type { Donation } from '../../lib/types';
-import { DollarSign, Clock, CheckCircle, XCircle, Trash2, Paperclip, FileText, Loader2, Printer } from 'lucide-react';
+import { DollarSign, Clock, CheckCircle, XCircle, Printer, Filter } from 'lucide-react';
 import { DonationReceiptModal } from '../../components/admin/DonationReceiptModal';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 export default function DonationsAdmin() {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    total: 0,
-    completed: 0,
-    pending: 0,
-    failed: 0
-  });
-  const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [receiptDonation, setReceiptDonation] = useState<Donation | null>(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     loadDonations();
@@ -22,16 +18,9 @@ export default function DonationsAdmin() {
 
   const loadDonations = async () => {
     try {
+      setLoading(true);
       const data = await donationService.getAll();
       setDonations(data);
-      
-      // Calculate stats
-      const total = data.reduce((sum, donation) => sum + donation.amount, 0);
-      const completed = data.filter(d => d.status === 'completed').reduce((sum, d) => sum + d.amount, 0);
-      const pending = data.filter(d => d.status === 'pending').reduce((sum, d) => sum + d.amount, 0);
-      const failed = data.filter(d => d.status === 'failed').reduce((sum, d) => sum + d.amount, 0);
-      
-      setStats({ total, completed, pending, failed });
     } catch (error) {
       console.error('Erro ao carregar doações:', error);
     } finally {
@@ -48,17 +37,6 @@ export default function DonationsAdmin() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir esta doação? Esta ação não pode ser desfeita.')) {
-      try {
-        await donationService.delete(id);
-        await loadDonations();
-      } catch (error) {
-        console.error('Erro ao deletar doação:', error);
-        alert('Ocorreu um erro ao excluir a doação.');
-      }
-    }
-  };
 
   const getProvider = (donation: Donation) => {
     if (donation.payment_method === 'paypal') return 'PayPal';
@@ -78,21 +56,48 @@ export default function DonationsAdmin() {
     return 'Desconhecido';
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, donationId: string) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const filteredDonations = useMemo(() => {
+    return donations.filter(donation => {
+      const d = new Date(donation.created_at);
+      if (startDate && new Date(startDate) > d) return false;
+      if (endDate) {
+        const parsedEnd = new Date(endDate);
+        parsedEnd.setHours(23, 59, 59, 999);
+        if (d > parsedEnd) return false;
+      }
+      return true;
+    });
+  }, [donations, startDate, endDate]);
 
-    setUploadingId(donationId);
-    try {
-      await donationService.uploadReceipt(donationId, file);
-      await loadDonations();
-    } catch (error) {
-      console.error('Erro ao fazer upload da nota fiscal:', error);
-      alert('Ocorreu um erro ao enviar a nota fiscal. Verifique se as tabelas e o bucket de storage estão configurados.');
-    } finally {
-      setUploadingId(null);
-    }
-  };
+  const stats = useMemo(() => {
+    const total = filteredDonations.reduce((sum, d) => sum + d.amount, 0);
+    const completed = filteredDonations.filter(d => d.status === 'completed').reduce((sum, d) => sum + d.amount, 0);
+    const pending = filteredDonations.filter(d => d.status === 'pending').reduce((sum, d) => sum + d.amount, 0);
+    const failed = filteredDonations.filter(d => d.status === 'failed').reduce((sum, d) => sum + d.amount, 0);
+    return { total, completed, pending, failed };
+  }, [filteredDonations]);
+
+  const lineChartData = useMemo(() => {
+    const completed = filteredDonations.filter(d => d.status === 'completed').sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    const groups: Record<string, number> = {};
+    completed.forEach(d => {
+      const dateStr = new Date(d.created_at).toLocaleDateString('pt-BR');
+      groups[dateStr] = (groups[dateStr] || 0) + d.amount;
+    });
+    return Object.entries(groups).map(([date, total]) => ({ date, total }));
+  }, [filteredDonations]);
+
+  const providerColors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#E01E5A'];
+  
+  const pieChartData = useMemo(() => {
+    const completed = filteredDonations.filter(d => d.status === 'completed');
+    const groups: Record<string, number> = {};
+    completed.forEach(d => {
+      const prov = getProvider(d);
+      groups[prov] = (groups[prov] || 0) + d.amount;
+    });
+    return Object.entries(groups).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({ name, value }));
+  }, [filteredDonations]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -144,10 +149,34 @@ export default function DonationsAdmin() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Doações</h1>
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold text-gray-900">Doações</h1>
         
-        {/* Statistics Cards */}
+        {/* Date Filter */}
+        <div className="flex items-center gap-3 bg-white p-2 rounded-lg shadow-sm">
+          <Filter className="w-5 h-5 text-gray-400" />
+          <input 
+            type="date" 
+            value={startDate} 
+            onChange={(e) => setStartDate(e.target.value)}
+            className="text-sm border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
+            title="Data Inicial"
+          />
+          <span className="text-gray-400">até</span>
+          <input 
+            type="date" 
+            value={endDate} 
+            onChange={(e) => setEndDate(e.target.value)}
+            className="text-sm border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
+            title="Data Final"
+          />
+          {(startDate || endDate) && (
+            <button onClick={() => { setStartDate(''); setEndDate(''); }} className="text-xs text-red-500 hover:text-red-700 font-medium">Limpar</button>
+          )}
+        </div>
+      </div>
+        
+      {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-4 rounded-lg shadow">
             <div className="flex items-center">
@@ -175,7 +204,7 @@ export default function DonationsAdmin() {
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-600">Concluídas</p>
                 <p className="text-lg font-semibold text-gray-900">
-                  {donations.filter(d => d.status === 'completed').length}
+                  {filteredDonations.filter(d => d.status === 'completed').length}
                 </p>
               </div>
             </div>
@@ -187,17 +216,63 @@ export default function DonationsAdmin() {
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-600">Falhadas</p>
                 <p className="text-lg font-semibold text-gray-900">
-                  {donations.filter(d => d.status === 'failed').length}
+                  {filteredDonations.filter(d => d.status === 'failed').length}
                 </p>
               </div>
             </div>
           </div>
         </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white p-4 rounded-lg shadow min-h-[300px]">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800 text-center">Arrecadação ao Longo do Tempo</h3>
+          {lineChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={lineChartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis tickFormatter={(val: any) => `R$ ${val}`} />
+                <RechartsTooltip formatter={(value: any) => [formatCurrency(Number(value) || 0), 'Arrecadado']} />
+                <Line type="monotone" dataKey="total" stroke="#00C49F" strokeWidth={2} name="Total Arrecadado" />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+             <div className="flex items-center justify-center h-full text-gray-400">Dados insuficientes para este gráfico</div>
+          )}
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow min-h-[300px]">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800 text-center">Arrecadação por Provedor</h3>
+          {pieChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie 
+                  data={pieChartData} 
+                  cx="50%" 
+                  cy="50%" 
+                  outerRadius={80} 
+                  fill="#8884d8" 
+                  dataKey="value"
+                  label={({name, percent}: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                >
+                  {pieChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={providerColors[index % providerColors.length]} />
+                  ))}
+                </Pie>
+                <RechartsTooltip formatter={(value: any) => formatCurrency(Number(value) || 0)} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-400">Dados insuficientes para este gráfico</div>
+          )}
+        </div>
       </div>
 
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul className="divide-y divide-gray-200">
-          {donations.map((donation) => (
+          {filteredDonations.map((donation) => (
             <li key={donation.id} className="px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -245,58 +320,7 @@ export default function DonationsAdmin() {
                     </div>
                   )}
 
-                  <button
-                    onClick={() => handleDelete(donation.id)}
-                    className="ml-2 p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
-                    title="Excluir doação"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-
                   <div className="flex items-center ml-2 border-l pl-3 border-gray-200">
-                    {donation.receipt_url ? (
-                      <a
-                        href={donation.receipt_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center px-2 py-1.5 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
-                        title="Ver Nota Fiscal / Recibo"
-                      >
-                        <FileText className="w-4 h-4 mr-1" />
-                        Ver Nota
-                      </a>
-                    ) : (
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id={`receipt-${donation.id}`}
-                          className="hidden"
-                          accept=".pdf,image/*"
-                          onChange={(e) => handleFileUpload(e, donation.id)}
-                          disabled={uploadingId === donation.id}
-                        />
-                        <label
-                          htmlFor={`receipt-${donation.id}`}
-                          className={`flex items-center px-2 py-1.5 text-xs border border-gray-200 rounded cursor-pointer transition-colors shadow-sm ${
-                            uploadingId === donation.id ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-50'
-                          }`}
-                          title="Anexar Nota Fiscal / Recibo"
-                        >
-                          {uploadingId === donation.id ? (
-                            <>
-                              <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                              Enviando
-                            </>
-                          ) : (
-                            <>
-                              <Paperclip className="w-3.5 h-3.5 mr-1" />
-                              Anexar Nota
-                            </>
-                          )}
-                        </label>
-                      </div>
-                    )}
-                    
                     <button
                       onClick={() => setReceiptDonation(donation)}
                       className="ml-2 flex items-center px-2 py-1.5 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors shadow-sm"
@@ -312,7 +336,7 @@ export default function DonationsAdmin() {
           ))}
         </ul>
         
-        {donations.length === 0 && (
+        {filteredDonations.length === 0 && (
           <div className="text-center py-8 text-gray-500">
             Nenhuma doação encontrada.
           </div>
