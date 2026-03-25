@@ -224,3 +224,21 @@ export const formatCPF = (value: string): string => {
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
     .slice(0, 14)
 }
+
+/**
+ * Verificar status do pagamento Cielo
+ */
+export const checkCieloPaymentStatus = async (paymentId: string): Promise<any> => {
+  try {
+    const response = await fetch(`/.netlify/functions/check-cielo-payment?paymentId=${paymentId}`)
+    
+    if (!response.ok) {
+      throw new Error('Erro ao consultar status')
+    }
+    
+    return await response.json()
+  } catch (error) {
+    console.error('Erro ao verificar status:', error)
+    throw error
+  }
+}

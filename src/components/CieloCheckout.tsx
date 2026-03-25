@@ -10,6 +10,7 @@ import {
   formatExpirationDate,
   formatCPF,
   CIELO_CARD_BRANDS,
+  checkCieloPaymentStatus,
   type CieloDonationData
 } from '../lib/cieloService'
 
@@ -161,10 +162,10 @@ export const CieloCheckout: React.FC<CieloCheckoutProps> = ({
               window.open(result.authenticationUrl, '_blank')
             }
           }
-          onSuccess(result.transactionId, paymentMethod)
+          throw new Error('O pagamento está pendente de confirmação. Verifique seu banco ou seu email.')
         } else if (result.status === 'processing') {
           // Pagamento em processamento - aguardar confirmação
-          onSuccess(result.transactionId, paymentMethod)
+          throw new Error('O pagamento está em processamento pelo banco. Por favor, aguarde.')
         } else {
           throw new Error(result.message || 'Pagamento não aprovado')
         }
@@ -176,10 +177,23 @@ export const CieloCheckout: React.FC<CieloCheckoutProps> = ({
     }
   }
 
-  const confirmPixPayment = () => {
+  const confirmPixPayment = async () => {
     // Quando o usuário confirmar que pagou o PIX
     if (pixTransactionId) {
-      onSuccess(pixTransactionId, 'pix')
+      setLoading(true)
+      try {
+        const check = await checkCieloPaymentStatus(pixTransactionId)
+        if (check && check.status === 'approved') {
+          onSuccess(pixTransactionId, 'pix')
+        } else {
+          onError('Pagamento não confirmado na Cielo. Se você já pagou, aguarde a confirmação.')
+          setLoading(false)
+        }
+      } catch (err: any) {
+        console.error('Erro na checagem PIX:', err)
+        onError('Erro ao processar status. Tente confirmar mais tarde.')
+        setLoading(false)
+      }
     } else {
       onError('ID da transação não encontrado')
     }

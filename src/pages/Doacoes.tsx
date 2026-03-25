@@ -66,7 +66,6 @@ const Doacoes: React.FC = () => {
   // Verificar status do pagamento ao retornar do Mercado Pago ou Cielo
   useEffect(() => {
     const status = searchParams.get('status')
-    const payment = searchParams.get('payment')
 
     if (status === 'success') {
       setSuccess(true)
@@ -74,14 +73,6 @@ const Doacoes: React.FC = () => {
       setError(t('donations.payment_not_approved'))
     } else if (status === 'pending') {
       setError(t('donations.payment_pending'))
-    } else if (status === 'processing' && payment === 'cielo') {
-      // Retorno da autenticação Cielo para cartão de débito
-      setSuccess(true)
-      setSuccessPaymentMethod('debit_card')
-      setTransactionId('CIELO-' + Date.now())
-      // Limpar URL params para evitar loop
-      const newUrl = window.location.pathname
-      window.history.replaceState({}, '', newUrl)
     }
   }, [searchParams, t])
 
@@ -169,7 +160,7 @@ const Doacoes: React.FC = () => {
       }
 
       // Processar doação via Pagar.me (nacional)
-      if (paymentMethod === 'pagarme_pix' || paymentMethod === 'pagarme_credit' || paymentMethod === 'pagarme_boleto') {
+      /* if (paymentMethod === 'pagarme_pix' || paymentMethod === 'pagarme_credit' || paymentMethod === 'pagarme_boleto') {
         // CPF é obrigatório para PIX e Boleto
         if ((paymentMethod === 'pagarme_pix' || paymentMethod === 'pagarme_boleto') && !donorInfo.cpf) {
           setError('CPF é obrigatório para pagamentos via PIX ou Boleto')
@@ -204,6 +195,7 @@ const Doacoes: React.FC = () => {
         setLoading(false)
         return
       }
+      */
     } catch (error) {
       console.error('Failed to process donation:', error)
       setError(t('donations.error_processing'))
@@ -399,7 +391,7 @@ const Doacoes: React.FC = () => {
               {/* Payment Gateway Selection */}
               <div className="mb-8">
                 <h3 className="text-xl font-semibold mb-4 text-gray-800">
-                  Escolha a Plataforma de Pagamento
+                  Forma de pagamento
                 </h3>
 
                 <div className="grid grid-cols-1 gap-4 mb-6">
@@ -425,7 +417,7 @@ const Doacoes: React.FC = () => {
                     </div>
                   </Card>
 
-                  {/* Pagar.me */}
+                  {/* Pagar.me
                   <Card
                     variant={paymentGateway === 'pagarme' ? 'elevated' : 'glass'}
                     className={`p-4 cursor-pointer transition-all ${paymentGateway === 'pagarme' ? 'ring-2 ring-primary-500 shadow-md' : 'hover:bg-white/5'
@@ -445,7 +437,7 @@ const Doacoes: React.FC = () => {
                         <p className="text-xs text-gray-600">PIX, Crédito e Boleto</p>
                       </div>
                     </div>
-                  </Card>
+                  </Card> */}
 
                   {/* PayPal */}
                   <Card
@@ -464,7 +456,7 @@ const Doacoes: React.FC = () => {
                       </div>
                       <div className="text-left">
                         <h4 className="font-bold text-gray-800">PayPal</h4>
-                        <p className="text-xs text-gray-600">Pagamento Internacional</p>
+                        <p className="text-xs text-gray-600">Pagamento internacional com cartão e conta PayPal</p>
                       </div>
                     </div>
                   </Card>
@@ -554,7 +546,7 @@ const Doacoes: React.FC = () => {
                 )}
 
                 {/* Payment Methods - Pagar.me */}
-                {paymentGateway === 'pagarme' && (
+                {false && (
                   <div className="space-y-3">
                     <h4 className="text-lg font-semibold text-gray-700 mb-3">Escolha a forma de pagamento:</h4>
 
