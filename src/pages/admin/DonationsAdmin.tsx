@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { donationService } from '../../lib/supabaseClient';
 import type { Donation } from '../../lib/types';
-import { DollarSign, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { DollarSign, Clock, CheckCircle, XCircle, Trash2, Paperclip, FileText, Loader2 } from 'lucide-react';
 
 export default function DonationsAdmin() {
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -12,6 +12,7 @@ export default function DonationsAdmin() {
     pending: 0,
     failed: 0
   });
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadDonations();
@@ -75,6 +76,21 @@ export default function DonationsAdmin() {
     return 'Desconhecido';
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, donationId: string) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingId(donationId);
+    try {
+      await donationService.uploadReceipt(donationId, file);
+      await loadDonations();
+    } catch (error) {
+      console.error('Erro ao fazer upload da nota fiscal:', error);
+      alert('Ocorreu um erro ao enviar a nota fiscal. Verifique se as tabelas e o bucket de storage estão configurados.');
+    } finally {
+      setUploadingId(null);
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -234,6 +250,51 @@ export default function DonationsAdmin() {
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
+
+                  <div className="flex items-center ml-2 border-l pl-3 border-gray-200">
+                    {donation.receipt_url ? (
+                      <a
+                        href={donation.receipt_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center px-2 py-1.5 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
+                        title="Ver Nota Fiscal / Recibo"
+                      >
+                        <FileText className="w-4 h-4 mr-1" />
+                        Ver Nota
+                      </a>
+                    ) : (
+                      <div className="relative">
+                        <input
+                          type="file"
+                          id={`receipt-${donation.id}`}
+                          className="hidden"
+                          accept=".pdf,image/*"
+                          onChange={(e) => handleFileUpload(e, donation.id)}
+                          disabled={uploadingId === donation.id}
+                        />
+                        <label
+                          htmlFor={`receipt-${donation.id}`}
+                          className={`flex items-center px-2 py-1.5 text-xs border border-gray-200 rounded cursor-pointer transition-colors shadow-sm ${
+                            uploadingId === donation.id ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-50'
+                          }`}
+                          title="Anexar Nota Fiscal / Recibo"
+                        >
+                          {uploadingId === donation.id ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                              Enviando
+                            </>
+                          ) : (
+                            <>
+                              <Paperclip className="w-3.5 h-3.5 mr-1" />
+                              Anexar Nota
+                            </>
+                          )}
+                        </label>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </li>

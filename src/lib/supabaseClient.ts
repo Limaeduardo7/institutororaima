@@ -378,6 +378,33 @@ export const donationService = {
       .eq('id', id);
     
     if (error) throw error;
+  },
+
+  async uploadReceipt(id: string, file: File): Promise<string> {
+    const fileExt = file.name.split('.').pop() || 'pdf';
+    const fileName = `donations/receipts/${id}-${Date.now()}.${fileExt}`;
+    
+    // Utilizando o bucket 'documents' que já existe
+    const { error: uploadError } = await supabase.storage
+      .from('documents')
+      .upload(fileName, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = supabase.storage
+      .from('documents')
+      .getPublicUrl(fileName);
+
+    const receipt_url = urlData.publicUrl;
+
+    const { error: updateError } = await supabase
+      .from('donations')
+      .update({ receipt_url })
+      .eq('id', id);
+
+    if (updateError) throw updateError;
+    
+    return receipt_url;
   }
 }
 

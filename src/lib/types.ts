@@ -45,6 +45,7 @@ export interface Donation {
   transaction_id?: string
   message?: string
   currency?: string
+  receipt_url?: string
   created_at: string
 }
 
