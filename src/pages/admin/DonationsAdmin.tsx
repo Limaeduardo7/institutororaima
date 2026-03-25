@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { donationService } from '../../lib/supabaseClient';
 import type { Donation } from '../../lib/types';
-import { DollarSign, Clock, CheckCircle, XCircle, Trash2, Paperclip, FileText, Loader2 } from 'lucide-react';
+import { DollarSign, Clock, CheckCircle, XCircle, Trash2, Paperclip, FileText, Loader2, Printer } from 'lucide-react';
+import { DonationReceiptModal } from '../../components/admin/DonationReceiptModal';
 
 export default function DonationsAdmin() {
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -13,6 +14,7 @@ export default function DonationsAdmin() {
     failed: 0
   });
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [receiptDonation, setReceiptDonation] = useState<Donation | null>(null);
 
   useEffect(() => {
     loadDonations();
@@ -294,6 +296,15 @@ export default function DonationsAdmin() {
                         </label>
                       </div>
                     )}
+                    
+                    <button
+                      onClick={() => setReceiptDonation(donation)}
+                      className="ml-2 flex items-center px-2 py-1.5 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors shadow-sm"
+                      title="Gerar e Imprimir Recibo"
+                    >
+                      <Printer className="w-3.5 h-3.5 mr-1" />
+                      Gerar Recibo
+                    </button>
                   </div>
                 </div>
               </div>
@@ -307,6 +318,13 @@ export default function DonationsAdmin() {
           </div>
         )}
       </div>
+
+      {receiptDonation && (
+        <DonationReceiptModal
+          donation={receiptDonation}
+          onClose={() => setReceiptDonation(null)}
+        />
+      )}
     </div>
   );
 }
