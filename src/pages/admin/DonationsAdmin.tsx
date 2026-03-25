@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { donationService } from '../../lib/supabaseClient';
 import type { Donation } from '../../lib/types';
-import { DollarSign, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { DollarSign, Clock, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 
 export default function DonationsAdmin() {
   const [donations, setDonations] = useState<Donation[]>([]);
@@ -44,6 +44,37 @@ export default function DonationsAdmin() {
       console.error('Erro ao atualizar status:', error);
     }
   };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Tem certeza que deseja excluir esta doação? Esta ação não pode ser desfeita.')) {
+      try {
+        await donationService.delete(id);
+        await loadDonations();
+      } catch (error) {
+        console.error('Erro ao deletar doação:', error);
+        alert('Ocorreu um erro ao excluir a doação.');
+      }
+    }
+  };
+
+  const getProvider = (donation: Donation) => {
+    if (donation.payment_method === 'paypal') return 'PayPal';
+    
+    // Tentar adivinhar pelo ID da transação
+    if (donation.transaction_id) {
+      if (donation.transaction_id.startsWith('pi_') || donation.transaction_id.startsWith('cs_')) return 'Stripe';
+      if (donation.transaction_id.startsWith('PIX-') || donation.transaction_id.startsWith('BOLETO-')) return 'Pagar.me';
+      // Cielo IDs geralmente são UUIDs de 36 caracteres com hifens (ex: c2524ee8-1f65-46eb...)
+      if (donation.transaction_id.length === 36 && donation.transaction_id.includes('-')) return 'Cielo';
+    }
+    
+    // Fallback básico para o caso da transação não ter ID ou ser muito antiga
+    if (donation.payment_method === 'pix' || donation.payment_method === 'card') return 'Cielo';
+    if (donation.payment_method === 'boleto') return 'Pagar.me';
+    
+    return 'Desconhecido';
+  };
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -163,6 +194,9 @@ export default function DonationsAdmin() {
                   
                   <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
                     <span>{donation.donor_email}</span>
+                    <span className="font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded">
+                      Via {getProvider(donation)}
+                    </span>
                     <span>{getPaymentMethodLabel(donation.payment_method)}</span>
                     <span>{formatDate(donation.created_at)}</span>
                     {donation.transaction_id && (
@@ -179,17 +213,27 @@ export default function DonationsAdmin() {
                       <button
                         onClick={() => handleStatusChange(donation.id, 'completed')}
                         className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                        title="Marcar como Aprovado"
                       >
                         Aprovar
                       </button>
                       <button
                         onClick={() => handleStatusChange(donation.id, 'failed')}
-                        className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                        className="px-2 py-1 text-xs bg-yellow-600 text-white rounded hover:bg-yellow-700"
+                        title="Marcar como Falha"
                       >
-                        Rejeitar
+                        Mudar Falha
                       </button>
                     </div>
                   )}
+
+                  <button
+                    onClick={() => handleDelete(donation.id)}
+                    className="ml-2 p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                    title="Excluir doação"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
             </li>

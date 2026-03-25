@@ -369,6 +369,15 @@ export const donationService = {
     
     if (error) throw error;
     return data?.reduce((sum, donation) => sum + donation.amount, 0) || 0;
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('donations')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
   }
 }
 
