@@ -246,7 +246,7 @@ const QuemSomos: React.FC = () => {
                     <img 
                       src={founder.image} 
                       alt={founder.name}
-                      className={`w-full h-full object-cover ${founder.name.includes('Naila') ? 'object-top' : 'object-center'}`}
+                      className={`w-full h-full object-cover ${founder.name.includes('Naila') ? 'object-bottom' : 'object-center'}`}
                     />
                   </div>
                   <CardTitle className="text-primary-800 text-xl">
