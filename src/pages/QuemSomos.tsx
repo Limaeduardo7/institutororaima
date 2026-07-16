@@ -120,14 +120,6 @@ const QuemSomos: React.FC = () => {
       specialties: ['Educação Física', 'Pedagogia', 'Enfermagem', 'Cuidado Social'],
       icon: <User className="w-6 h-6" />,
       image: '/WhatsApp Image 2025-11-17 at 18.14.35.jpeg'
-    },
-    {
-      name: 'Nara Araújo',
-      role: t('about.founders.nara.role'),
-      bio: t('about.founders.nara.bio'),
-      specialties: ['Administração', 'Gestão Pública', 'Magistério', 'Patologia Clínica'],
-      icon: <User className="w-6 h-6" />,
-      image: '/WhatsApp Image 2025-11-17 at 18.18.25.jpeg'
     }
   ]
 
