@@ -29,29 +29,29 @@ export default function Header() {
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 group">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
             <img 
               src="/logo.png" 
               alt="Instituto Estação" 
-              className="h-12 w-auto group-hover:scale-105 transition-transform duration-300"
+              className="h-10 sm:h-12 w-auto group-hover:scale-105 transition-transform duration-300"
             />
             <div className="flex flex-col">
-              <span className="text-xl font-bold text-primary-700 leading-tight">
+              <span className="text-sm sm:text-xl font-bold text-primary-700 leading-tight whitespace-nowrap">
                 Instituto Estação
               </span>
-              <span className="text-xs text-primary-500 font-medium">
+              <span className="hidden sm:block text-xs text-primary-500 font-medium">
                 Transformando vidas desde 1997
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden xl:flex items-center gap-4 text-sm">
             {menuItems.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
-                className="text-neutral-700 hover:text-primary-600 font-medium transition-colors duration-200 relative group"
+                className="text-neutral-700 hover:text-primary-600 font-medium transition-colors duration-200 relative group whitespace-nowrap"
               >
                 {item.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-600 group-hover:w-full transition-all duration-300"></span>
@@ -61,12 +61,13 @@ export default function Header() {
           </div>
 
           {/* Mobile Language Selector and Menu Button */}
-          <div className="lg:hidden flex items-center gap-2">
+          <div className="xl:hidden flex items-center gap-2">
             <LanguageSelector />
             <button
               onClick={toggleMenu}
               className="p-2 rounded-lg hover:bg-primary-50 transition-colors"
               aria-label="Toggle menu"
+              aria-expanded={isMenuOpen}
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6 text-primary-700" />
@@ -79,7 +80,7 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="lg:hidden mt-4 py-4 border-t border-primary-100">
+          <div className="xl:hidden mt-4 py-4 border-t border-primary-100">
             <div className="flex flex-col space-y-3">
               {menuItems.map((item) => (
                 <Link

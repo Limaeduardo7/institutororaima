@@ -88,7 +88,7 @@ const LanguageSelector: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/50 hover:from-primary-100 hover:to-primary-200/50 border border-primary-200 hover:border-primary-300 transition-all duration-300 shadow-sm hover:shadow-md group"
+        className="flex items-center gap-2 px-2 sm:px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/50 hover:from-primary-100 hover:to-primary-200/50 border border-primary-200 hover:border-primary-300 transition-all duration-300 shadow-sm hover:shadow-md group"
         aria-label="Select language"
       >
         <div className="relative">
